@@ -92,36 +92,6 @@ Both `initialize` and `getItems` receive the layer instance. It can also be acce
 | `end` | number | Last screen row of the range (optional). Marker height spans `row` to `end` |
 | `cls` | string | Additional CSS class (optional) |
 
-## Provided Service `simplemap`
-
-Provides a scrollbar widget for non-editor panes (like PDF viewer). Consumers receive a `Simplemap` constructor to create standalone scrollbar markers.
-
-In your `package.json`:
-
-```json
-{
-  "consumedServices": {
-    "simplemap": {
-      "versions": { "1.0.0": "consumeSimplemap" }
-    }
-  }
-}
-```
-
-In your main module:
-
-```javascript
-consumeSimplemap(Simplemap) {
-  const simplemap = new Simplemap();
-  simplemap.setItems([
-    { prc: 10, cls: "marker-h1" },
-    { prc: 50, end: 60, cls: "marker-h2" },
-  ]);
-  container.appendChild(simplemap.element);
-  return new Disposable(() => simplemap.destroy());
-}
-```
-
 ## Customization
 
 The scrollbar width is measured automatically and stored as CSS variables on `:root`:
@@ -149,6 +119,36 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 ```less
 .scrollmap .marker-mylayer {
   background-color: @text-color-info;
+}
+```
+
+## Provided Service `simplemap`
+
+Provides a scrollbar widget for non-editor panes (like PDF viewer). Consumers receive a `Simplemap` constructor to create standalone scrollbar markers.
+
+In your `package.json`:
+
+```json
+{
+  "consumedServices": {
+    "simplemap": {
+      "versions": { "1.0.0": "consumeSimplemap" }
+    }
+  }
+}
+```
+
+In your main module:
+
+```javascript
+consumeSimplemap(Simplemap) {
+  const simplemap = new Simplemap();
+  simplemap.setItems([
+    { prc: 10, cls: "marker-h1" },
+    { prc: 50, end: 60, cls: "marker-h2" },
+  ]);
+  container.appendChild(simplemap.element);
+  return new Disposable(() => simplemap.destroy());
 }
 ```
 
