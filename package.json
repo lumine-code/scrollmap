@@ -26,7 +26,6 @@
     }
   },
   "dependencies": {
-    "etch": "^0.14.1",
     "@asiloisad/select-list": "^1.6.0"
   },
   "configSchema": {
