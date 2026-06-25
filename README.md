@@ -101,7 +101,9 @@ The scrollbar width is measured automatically and stored as CSS variables on `:r
 | `--scrollbar-width` | Measured scrollbar width (e.g. 10px on Windows, 8px on Linux) |
 | `--scrollbar-bottom` | Bottom offset for horizontal scrollbar (0px for overlay scrollbars) |
 
-Marker widths use prcages (40% center, 20% sides) to scale proportionally across platforms.
+Markers are drawn on a canvas for performance. Existing marker CSS classes are still used through hidden style resolver elements, so packages and user styles can keep setting marker color, opacity, width, height, and z-index with `.marker` rules.
+
+Marker widths use percentages (40% center, 20% sides) to scale proportionally across platforms.
 
 The style can be adjusted according to user preferences in the `styles.less` file:
 
