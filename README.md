@@ -74,7 +74,14 @@ Provider properties:
 | `initialize`  | function | `(layer) => void` - set up layer                   |
 | `getItems`    | function | `(layer) => items[]` - return markers to render    |
 
-Both `initialize` and `getItems` receive the layer instance. It can also be accessed externally via `editor.scrollmap.layers.get(name)` to push data from service consumers.
+Both `initialize` and `getItems` receive the layer instance. To push data into a layer from a service consumer, keep a reference to it: store the layer per editor in `initialize` and drop it with a disposable added to `layer.disposables`, which is disposed when the layer is destroyed:
+
+```js
+initialize: (layer) => {
+  this.layers.set(layer.editor, layer);
+  layer.disposables.add(new Disposable(() => this.layers.delete(layer.editor)));
+},
+```
 
 | Member        | Type                | Description                                                                                                                                                                     |
 | ------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

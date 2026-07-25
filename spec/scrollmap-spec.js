@@ -125,7 +125,7 @@ describe("scrollmap", () => {
   });
 
   describe("editor scrollmaps", () => {
-    let editor, editorElement, mainModule;
+    let editor, editorElement, mainModule, scrollmap;
 
     beforeEach(async () => {
       editor = await atom.workspace.open();
@@ -133,13 +133,14 @@ describe("scrollmap", () => {
       editorElement = atom.views.getView(editor);
       await waitFor(() => editorElement.querySelector(".vertical-scrollbar"));
       mainModule = await activate();
-      await waitFor(() => editor.scrollmap);
+      await waitFor(() => mainModule.scrollmapForEditor(editor));
+      scrollmap = mainModule.scrollmapForEditor(editor);
     });
 
     it("attaches a scrollmap element next to the editor scrollbar", () => {
-      expect(editor.scrollmap.element.classList.contains("scrollmap")).toBe(true);
-      expect(editorElement.contains(editor.scrollmap.element)).toBe(true);
-      expect(editor.scrollmap.element.querySelector("canvas.scrollmap-canvas")).not.toBeNull();
+      expect(scrollmap.element.classList.contains("scrollmap")).toBe(true);
+      expect(editorElement.contains(scrollmap.element)).toBe(true);
+      expect(scrollmap.element.querySelector("canvas.scrollmap-canvas")).not.toBeNull();
     });
 
     it("adds layers from scrollmap service providers and renders their items", async () => {
@@ -149,7 +150,7 @@ describe("scrollmap", () => {
         getItems: () => [{ row: 0 }, { row: 5, end: 8, cls: "extra" }],
       });
 
-      const layer = editor.scrollmap.layers.get("speclayer");
+      const layer = scrollmap.layers.get("speclayer");
       expect(layer).toBeDefined();
 
       // Flush the two throttled stages (scrollmap update, then layer update).
@@ -161,11 +162,11 @@ describe("scrollmap", () => {
       expect(typeof layer.items[0].pix).toBe("number");
       expect(typeof layer.items[1].piz).toBe("number");
 
-      const canvas = editor.scrollmap.element.querySelector("canvas.scrollmap-canvas");
+      const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       await waitFor(() => canvasHasInk(canvas));
 
       disposable.dispose();
-      expect(editor.scrollmap.layers.has("speclayer")).toBe(false);
+      expect(scrollmap.layers.has("speclayer")).toBe(false);
       expect(mainModule.providers.has("speclayer")).toBe(false);
     });
 
@@ -178,11 +179,11 @@ describe("scrollmap", () => {
 
       advanceClock(30);
       advanceClock(30);
-      await waitFor(() => editor.scrollmap.layers.get("speclayer").items.length === 1);
+      await waitFor(() => scrollmap.layers.get("speclayer").items.length === 1);
 
-      const canvas = editor.scrollmap.element.querySelector("canvas.scrollmap-canvas");
+      const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       // Draw once more with the layer disabled and verify nothing is painted.
-      editor.scrollmap.drawMarkers();
+      scrollmap.drawMarkers();
       expect(canvasHasInk(canvas)).toBe(false);
     });
   });
