@@ -1,5 +1,5 @@
 describe("scrollmap", () => {
-  let workspaceElement, specStyle;
+  let workspaceElement, specStyle, styleSheets;
 
   // The spec runner freezes setTimeout, so poll on animation frames instead.
   function waitFor(condition, { frames = 600 } = {}) {
@@ -29,6 +29,24 @@ describe("scrollmap", () => {
     return pack.mainModule;
   }
 
+  // Markers are drawn centered on the map, so the middle of the canvas is where
+  // the color of a marker spanning the whole height lands.
+  function markerColor(canvas) {
+    const ctx = canvas.getContext("2d");
+    const x = Math.floor(canvas.width / 2);
+    const y = Math.floor(canvas.height / 2);
+    const [r, g, b, a] = ctx.getImageData(x, y, 1, 1).data;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+
+  // Restyle the window the way a theme switch does: attach a stylesheet through
+  // `atom.styles`, which is what announces the swap to its consumers.
+  function restyle(css) {
+    const disposable = atom.styles.addStyleSheet(css);
+    styleSheets.push(disposable);
+    return disposable;
+  }
+
   function canvasHasInk(canvas) {
     const ctx = canvas.getContext("2d");
     const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -53,10 +71,14 @@ describe("scrollmap", () => {
       .marker.marker-speclayer { background-color: rgb(0, 128, 255); }
     `;
     document.head.appendChild(specStyle);
+    styleSheets = [];
   });
 
   afterEach(() => {
     specStyle.remove();
+    for (const disposable of styleSheets) {
+      disposable.dispose();
+    }
   });
 
   describe("activation", () => {
@@ -148,6 +170,38 @@ describe("scrollmap", () => {
 
       simplemap.destroy();
       container.remove();
+    });
+
+    it("repaints its canvas when the window is restyled", async () => {
+      const container = document.createElement("div");
+      container.style.cssText = "position: relative; width: 20px; height: 200px;";
+      workspaceElement.appendChild(container);
+
+      const simplemap = new Simplemap();
+      simplemap.element.style.width = "20px";
+      simplemap.element.style.height = "200px";
+      container.appendChild(simplemap.element);
+      simplemap.setItems([{ prc: 0, end: 100, cls: "spec-plain" }]);
+
+      const canvas = simplemap.element.querySelector("canvas.scrollmap-canvas");
+      expect(markerColor(canvas)).toBe("rgba(0, 255, 0, 255)");
+
+      restyle(".simplemap .marker.spec-plain { background-color: rgb(255, 255, 0); }");
+      await null;
+      expect(markerColor(canvas)).toBe("rgba(255, 255, 0, 255)");
+
+      simplemap.destroy();
+      container.remove();
+    });
+
+    it("stops following restyles once destroyed", async () => {
+      const simplemap = new Simplemap();
+      simplemap.destroy();
+
+      spyOn(simplemap, "drawMarkers");
+      restyle(".simplemap .marker.spec-plain { background-color: rgb(255, 255, 0); }");
+      await null;
+      expect(simplemap.drawMarkers).not.toHaveBeenCalled();
     });
   });
 
@@ -308,6 +362,64 @@ describe("scrollmap", () => {
       // Draw once more with the layer disabled and verify nothing is painted.
       scrollmap.drawMarkers();
       expect(canvasHasInk(canvas)).toBe(false);
+    });
+
+    describe("when the window is restyled", () => {
+      let canvas;
+
+      beforeEach(async () => {
+        mainModule.consumeScrollmap({
+          name: "speclayer",
+          getItems: () => [{ row: 0, end: 99 }],
+        });
+        advanceClock(30);
+        advanceClock(30);
+        canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
+        await waitFor(() => canvasHasInk(canvas));
+      });
+
+      it("repaints the markers in the task that attached the stylesheet", async () => {
+        expect(markerColor(canvas)).toBe("rgba(0, 128, 255, 255)");
+
+        restyle(".scrollmap .marker.marker-speclayer { background-color: rgb(255, 0, 255); }");
+        // Not yet: a theme swap attaches a burst of stylesheets, collapsed here
+        // into a single repaint…
+        expect(markerColor(canvas)).toBe("rgba(0, 128, 255, 255)");
+
+        // …taken on a microtask rather than a timer or an animation frame. The
+        // swap runs inside a View Transition that snapshots the window one frame
+        // on, so this is the last moment a canvas can join the cross-fade.
+        await null;
+        expect(markerColor(canvas)).toBe("rgba(255, 0, 255, 255)");
+      });
+
+      it("repaints when a variant switch restyles without attaching a stylesheet", async () => {
+        expect(markerColor(canvas)).toBe("rgba(0, 128, 255, 255)");
+
+        // `updateAppearance` mutates the document from inside the cross-fade and
+        // announces it with `onDidChangeActiveThemes`. No stylesheet lands, so
+        // that event is the only signal this path gives.
+        await atom.themes.updateAppearance(() => {
+          specStyle.textContent = ".marker.marker-speclayer { background-color: rgb(0, 200, 0); }";
+        });
+
+        await null;
+        expect(markerColor(canvas)).toBe("rgba(0, 200, 0, 255)");
+      });
+
+      it("leaves the canvas alone when the restyle misses the markers", async () => {
+        // Every stylesheet attached anywhere in the window arrives here, at any
+        // time. Let one through first: it settles the scrollbar measurement and
+        // the style digest the guard compares against.
+        restyle("/* a stylesheet that changes nothing */");
+        await null;
+
+        spyOn(scrollmap, "drawMarkers").and.callThrough();
+        restyle(".unrelated-spec-rule { color: rgb(1, 2, 3); }");
+        await null;
+        expect(scrollmap.drawMarkers).not.toHaveBeenCalled();
+        expect(markerColor(canvas)).toBe("rgba(0, 128, 255, 255)");
+      });
     });
   });
 
