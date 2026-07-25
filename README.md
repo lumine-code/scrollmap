@@ -154,7 +154,7 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **scrollmap** (`1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
+- **scrollmap** (`^1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
 - **simplemap** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
 
 ## Contributing
