@@ -1,12 +1,10 @@
-@import "ui-variables";
-
 .scrollmap-view .tag {
   margin-right: 5px;
   border: solid 1px;
   padding: 0.2em 0.4em;
   border-radius: 6px;
   vertical-align: baseline;
-  color: @syntax-color-constant;
+  color: var(--syntax-color-constant);
 }
 
 .scrollmap,
@@ -45,16 +43,19 @@
     pointer-events: none;
     min-height: 1px;
     cursor: default;
+
     &.left {
       right: auto;
       left: 0;
       width: 20%;
     }
+
     &.right {
       left: auto;
       right: 0;
       width: 20%;
     }
+
     &.scrollmap-style-probe {
       pointer-events: none;
     }
