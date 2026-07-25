@@ -49,6 +49,7 @@ describe("scrollmap", () => {
     specStyle = document.createElement("style");
     specStyle.textContent = `
       .marker.spec-marker { background-color: rgb(255, 0, 0); width: 100%; }
+      .marker.spec-plain { background-color: rgb(0, 255, 0); }
       .marker.marker-speclayer { background-color: rgb(0, 128, 255); }
     `;
     document.head.appendChild(specStyle);
@@ -122,6 +123,32 @@ describe("scrollmap", () => {
       simplemap.destroy();
       expect(simplemap.element.parentNode).toBeNull();
     });
+
+    it("stretches markers over the whole width for the full position", () => {
+      const container = document.createElement("div");
+      container.style.cssText = "position: relative; width: 20px; height: 200px;";
+      workspaceElement.appendChild(container);
+
+      const simplemap = new Simplemap();
+      simplemap.element.style.width = "20px";
+      simplemap.element.style.height = "200px";
+      container.appendChild(simplemap.element);
+
+      simplemap.setItems([
+        { prc: 10, cls: "spec-plain" },
+        { prc: 50, end: 60, position: "full", cls: "spec-plain" },
+      ]);
+
+      const resolver = simplemap.element.querySelector(".scrollmap-style-resolver");
+      const centered = resolver.querySelector(".marker:not(.full)");
+      const full = resolver.querySelector(".marker.full");
+      expect(full.offsetWidth).toBe(20);
+      expect(centered.offsetWidth).toBeLessThan(full.offsetWidth);
+      expect(full.offsetLeft).toBe(0);
+
+      simplemap.destroy();
+      container.remove();
+    });
   });
 
   describe("editor scrollmaps", () => {
@@ -168,6 +195,21 @@ describe("scrollmap", () => {
       disposable.dispose();
       expect(scrollmap.layers.has("speclayer")).toBe(false);
       expect(mainModule.providers.has("speclayer")).toBe(false);
+    });
+
+    it("applies the layer position class and lets an item override it", () => {
+      mainModule.consumeScrollmap({
+        name: "speclayer",
+        position: "left",
+        getItems: () => [{ row: 0 }, { row: 5, end: 8, position: "full", cls: "extra" }],
+      });
+
+      advanceClock(30);
+      advanceClock(30);
+
+      const layer = scrollmap.layers.get("speclayer");
+      expect(layer.items[0].className).toBe("marker marker-speclayer left");
+      expect(layer.items[1].className).toBe("marker marker-speclayer full extra");
     });
 
     it("skips layers listed in the disabledLayers setting", async () => {

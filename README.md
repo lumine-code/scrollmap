@@ -7,7 +7,7 @@ Core package providing scrollmap infrastructure for text editors and custom pane
 ## Features
 
 - **Layer system**: multiple packages can add markers to the scrollbar.
-- **3-column layout**: markers positioned in left, center, or right columns.
+- **Column layout**: markers positioned in the left, center, or right column, or spanning the full width.
 - **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux.
 - **Toggle panel**: enable or disable layers individually.
 - **Simplemap API**: support for non-editor panes like the PDF viewer.
@@ -59,6 +59,7 @@ provideScrollmap() {
         { row: 10 },
         { row: 20, cls: "special" },
         { row: 30, end: 35, cls: "special" },
+        { row: 40, end: 45, position: "full" },
       ];
     },
   };
@@ -67,14 +68,14 @@ provideScrollmap() {
 
 Provider properties:
 
-| Property      | Type     | Description                                        |
-| ------------- | -------- | -------------------------------------------------- |
-| `name`        | string   | Layer name (CSS class: `marker-{name}`)            |
-| `description` | string   | Layer description shown in toggle panel (optional) |
-| `position`    | string   | Position class e.g. `left`, `right` (optional)     |
-| `timer`       | number   | Throttle interval in ms (default: 20)              |
-| `initialize`  | function | `(layer) => void` - set up layer                   |
-| `getItems`    | function | `(layer) => items[]` - return markers to render    |
+| Property      | Type     | Description                                                                    |
+| ------------- | -------- | ------------------------------------------------------------------------------ |
+| `name`        | string   | Layer name (CSS class: `marker-{name}`)                                        |
+| `description` | string   | Layer description shown in toggle panel (optional)                             |
+| `position`    | string   | Column for every item: `left`, `right`, or `full` (optional, default centered) |
+| `timer`       | number   | Throttle interval in ms (default: 20)                                          |
+| `initialize`  | function | `(layer) => void` - set up layer                                               |
+| `getItems`    | function | `(layer) => items[]` - return markers to render                                |
 
 Both `initialize` and `getItems` receive the layer instance. To push data into a layer from a service consumer, keep a reference to it: store the layer per editor in `initialize` and drop it with a disposable added to `layer.disposables`, which is disposed when the layer is destroyed:
 
@@ -99,11 +100,12 @@ initialize: (layer) => {
 
 Marker item properties:
 
-| Property | Type   | Description                                                              |
-| -------- | ------ | ------------------------------------------------------------------------ |
-| `row`    | number | Screen row for the marker                                                |
-| `end`    | number | Last screen row of the range (optional). Marker height spans `row`-`end` |
-| `cls`    | string | Additional CSS class (optional)                                          |
+| Property   | Type   | Description                                                              |
+| ---------- | ------ | ------------------------------------------------------------------------ |
+| `row`      | number | Screen row for the marker                                                |
+| `end`      | number | Last screen row of the range (optional). Marker height spans `row`-`end` |
+| `cls`      | string | Additional CSS class (optional)                                          |
+| `position` | string | Column for this item, overrides the layer `position` (optional)          |
 
 ### The `simplemap` service
 
@@ -134,6 +136,8 @@ consumeSimplemap(Simplemap) {
   return new Disposable(() => simplemap.destroy());
 }
 ```
+
+Simplemap items are positioned in percent: `prc` is the marker offset, `end` the end of the range, and `height` a fixed height for single markers. `cls` and `position` work as they do for editor layers.
 
 ## Customization
 
