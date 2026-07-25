@@ -1,6 +1,8 @@
 # scrollmap
 
-Show markers on the scroll bar. Core package providing scrollmap infrastructure for text editors and custom panes.
+Show markers on the scrollbar.
+
+Core package providing scrollmap infrastructure for text editors and custom panes.
 
 ## Features
 
