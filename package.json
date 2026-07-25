@@ -7,7 +7,12 @@
     "url": "https://github.com/lumine-code/scrollmap/issues"
   },
   "keywords": [
-    "scrollmap"
+    "overview-ruler",
+    "gutter",
+    "annotation",
+    "decoration",
+    "layer",
+    "scrollbar"
   ],
   "version": "1.0.0",
   "license": "MIT",
