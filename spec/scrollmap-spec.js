@@ -197,6 +197,87 @@ describe("scrollmap", () => {
       expect(mainModule.providers.has("speclayer")).toBe(false);
     });
 
+    it("sorts and merges adjacent items for layers with the merge flag", () => {
+      mainModule.consumeScrollmap({
+        name: "speclayer",
+        merge: true,
+        getItems: () => [
+          { row: 20, end: 21, cls: "extra" },
+          { row: 6, end: 8 },
+          { row: 0 },
+          { row: 9 },
+          { row: 22, cls: "extra" },
+          { row: 1, end: 2 },
+        ],
+      });
+
+      advanceClock(30);
+      advanceClock(30);
+
+      const layer = scrollmap.layers.get("speclayer");
+      const items = layer.items.map(({ row, end, cls }) => ({ row, end, cls }));
+      expect(items).toEqual([
+        { row: 0, end: 2, cls: undefined },
+        { row: 6, end: 9, cls: undefined },
+        { row: 20, end: 22, cls: "extra" },
+      ]);
+    });
+
+    it("empties layers holding more items than their threshold setting", () => {
+      atom.config.set("scrollmap.specThreshold", 2);
+      mainModule.consumeScrollmap({
+        name: "speclayer",
+        threshold: "scrollmap.specThreshold",
+        getItems: () => [{ row: 0 }, { row: 5 }, { row: 10 }],
+      });
+
+      advanceClock(30);
+      advanceClock(30);
+
+      const layer = scrollmap.layers.get("speclayer");
+      expect(layer.items).toEqual([]);
+
+      // Raising the limit re-runs the layer through the config subscription.
+      atom.config.set("scrollmap.specThreshold", 5);
+      advanceClock(30);
+      expect(layer.items.length).toBe(3);
+    });
+
+    it("leaves the provider's item objects untouched", () => {
+      const items = [{ row: 0 }, { row: 5, end: 8 }];
+      mainModule.consumeScrollmap({
+        name: "speclayer",
+        getItems: () => items,
+      });
+
+      advanceClock(30);
+      advanceClock(30);
+
+      expect(scrollmap.layers.get("speclayer").items[0].className).toBeDefined();
+      expect(items).toEqual([{ row: 0 }, { row: 5, end: 8 }]);
+    });
+
+    it("refuses a second provider with an already registered name", () => {
+      const first = mainModule.consumeScrollmap({
+        name: "speclayer",
+        getItems: () => [{ row: 0 }],
+      });
+      const second = mainModule.consumeScrollmap({
+        name: "speclayer",
+        getItems: () => [{ row: 5 }],
+      });
+
+      expect(scrollmap.layers.has("speclayer")).toBe(true);
+
+      // Disposing the rejected consumer must not unregister the winner.
+      second.dispose();
+      expect(mainModule.providers.has("speclayer")).toBe(true);
+      expect(scrollmap.layers.has("speclayer")).toBe(true);
+
+      first.dispose();
+      expect(mainModule.providers.has("speclayer")).toBe(false);
+    });
+
     it("applies the layer position class and lets an item override it", () => {
       mainModule.consumeScrollmap({
         name: "speclayer",
