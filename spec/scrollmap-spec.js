@@ -99,7 +99,7 @@ describe("scrollmap", () => {
     });
   });
 
-  describe("simplemap service", () => {
+  describe("scrollmap.widget service", () => {
     let Simplemap, mainModule;
 
     beforeEach(async () => {
