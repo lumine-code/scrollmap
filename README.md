@@ -11,7 +11,7 @@ Core package providing scrollmap infrastructure for text editors and custom pane
 - **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux.
 - **Toggle panel**: enable or disable layers individually.
 - **Simplemap API**: support for non-editor panes like the PDF viewer.
-- **Extensible**: other packages provide layers via the `scrollmap` service.
+- **Extensible**: other packages provide layers via the `scrollmap.layer` service.
 
 ## Installation
 
@@ -25,7 +25,7 @@ Commands available in `atom-workspace`:
 
 ## Usage
 
-### The `scrollmap` service
+### The `scrollmap.layer` service
 
 Allows other packages to add custom marker layers to the scrollbar. Each layer provider returns a descriptor with initialization and item-fetching callbacks.
 
@@ -34,8 +34,8 @@ In your `package.json`:
 ```json
 {
   "providedServices": {
-    "scrollmap": {
-      "versions": { "1.1.0": "provideScrollmap" }
+    "scrollmap.layer": {
+      "versions": { "1.0.0": "provideScrollmapLayer" }
     }
   }
 }
@@ -44,7 +44,7 @@ In your `package.json`:
 In your main module:
 
 ```javascript
-provideScrollmap() {
+provideScrollmapLayer() {
   return {
     name: "mylayer",
     description: "My layer description",
@@ -97,7 +97,7 @@ initialize: (layer) => {
 | Member          | Type                | Description                                                                                                                                                                     |
 | --------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `editor`        | TextEditor          | The editor this layer belongs to                                                                                                                                                |
-| `props`         | object              | The provider descriptor passed to `provideScrollmap`                                                                                                                            |
+| `props`         | object              | The provider descriptor passed to `provideScrollmapLayer`                                                                                                                       |
 | `cache`         | Map                 | Persistent store to bridge external service data into `getItems`. Set data from service callbacks with `cache.set("data", ...)`, read it in `getItems` with `cache.get("data")` |
 | `items`         | array               | Current marker items populated from `getItems` return value. Read-only for consumers                                                                                            |
 | `disposables`   | CompositeDisposable | Add subscriptions and cleanup callbacks here. Auto-disposed on layer destroy                                                                                                    |
@@ -119,7 +119,7 @@ Marker item properties:
 | `cls`      | string | Additional CSS class (optional)                                          |
 | `position` | string | Column for this item, overrides the layer `position` (optional)          |
 
-### The `simplemap` service
+### The `scrollmap.widget` service
 
 Provides a scrollbar widget for non-editor panes (like the PDF viewer). Consumers receive a `Simplemap` constructor to create standalone scrollbar markers.
 
@@ -128,7 +128,7 @@ In your `package.json`:
 ```json
 {
   "consumedServices": {
-    "simplemap": {
+    "scrollmap.widget": {
       "versions": { "1.0.0": "consumeSimplemap" }
     }
   }
@@ -179,8 +179,8 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **scrollmap** (`^1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
-- **simplemap** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
+- **scrollmap.layer** (`^1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
+- **scrollmap.widget** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
 
 ## Contributing
 

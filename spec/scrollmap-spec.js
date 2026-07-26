@@ -104,7 +104,7 @@ describe("scrollmap", () => {
 
     beforeEach(async () => {
       mainModule = await activate();
-      Simplemap = mainModule.provideSimplemap();
+      Simplemap = mainModule.provideScrollmapWidget();
     });
 
     it("provides an instantiable class exposing element, setItems and destroy", () => {
@@ -225,7 +225,7 @@ describe("scrollmap", () => {
     });
 
     it("adds layers from scrollmap service providers and renders their items", async () => {
-      const disposable = mainModule.consumeScrollmap({
+      const disposable = mainModule.consumeScrollmapLayer({
         name: "speclayer",
         description: "Spec layer",
         getItems: () => [{ row: 0 }, { row: 5, end: 8, cls: "extra" }],
@@ -252,7 +252,7 @@ describe("scrollmap", () => {
     });
 
     it("sorts and merges adjacent items for layers with the merge flag", () => {
-      mainModule.consumeScrollmap({
+      mainModule.consumeScrollmapLayer({
         name: "speclayer",
         merge: true,
         getItems: () => [
@@ -279,7 +279,7 @@ describe("scrollmap", () => {
 
     it("empties layers holding more items than their threshold setting", () => {
       atom.config.set("scrollmap.specThreshold", 2);
-      mainModule.consumeScrollmap({
+      mainModule.consumeScrollmapLayer({
         name: "speclayer",
         threshold: "scrollmap.specThreshold",
         getItems: () => [{ row: 0 }, { row: 5 }, { row: 10 }],
@@ -299,7 +299,7 @@ describe("scrollmap", () => {
 
     it("leaves the provider's item objects untouched", () => {
       const items = [{ row: 0 }, { row: 5, end: 8 }];
-      mainModule.consumeScrollmap({
+      mainModule.consumeScrollmapLayer({
         name: "speclayer",
         getItems: () => items,
       });
@@ -312,11 +312,11 @@ describe("scrollmap", () => {
     });
 
     it("refuses a second provider with an already registered name", () => {
-      const first = mainModule.consumeScrollmap({
+      const first = mainModule.consumeScrollmapLayer({
         name: "speclayer",
         getItems: () => [{ row: 0 }],
       });
-      const second = mainModule.consumeScrollmap({
+      const second = mainModule.consumeScrollmapLayer({
         name: "speclayer",
         getItems: () => [{ row: 5 }],
       });
@@ -333,7 +333,7 @@ describe("scrollmap", () => {
     });
 
     it("applies the layer position class and lets an item override it", () => {
-      mainModule.consumeScrollmap({
+      mainModule.consumeScrollmapLayer({
         name: "speclayer",
         position: "left",
         getItems: () => [{ row: 0 }, { row: 5, end: 8, position: "full", cls: "extra" }],
@@ -348,7 +348,7 @@ describe("scrollmap", () => {
     });
 
     it("skips layers listed in the disabledLayers setting", async () => {
-      mainModule.consumeScrollmap({
+      mainModule.consumeScrollmapLayer({
         name: "speclayer",
         getItems: () => [{ row: 0 }],
       });
@@ -368,7 +368,7 @@ describe("scrollmap", () => {
       let canvas;
 
       beforeEach(async () => {
-        mainModule.consumeScrollmap({
+        mainModule.consumeScrollmapLayer({
           name: "speclayer",
           getItems: () => [{ row: 0, end: 99 }],
         });
@@ -426,7 +426,7 @@ describe("scrollmap", () => {
   describe("scrollmap:toggle-layers", () => {
     it("opens the layer toggle panel listing registered providers", async () => {
       const mainModule = await activate();
-      mainModule.consumeScrollmap({
+      mainModule.consumeScrollmapLayer({
         name: "speclayer",
         description: "Spec layer",
         getItems: () => [],
