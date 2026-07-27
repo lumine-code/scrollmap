@@ -87,7 +87,7 @@ module.exports = {
 
 ## Behavior
 
-Markers are drawn on a canvas, but their appearance still comes from CSS: the widget resolves `.marker` rules through a hidden style-resolver element, so the same rules that style editor layers style these too.
+Markers are drawn on a canvas, but their appearance still comes from CSS: the widget resolves `.marker` rules through a hidden style-resolver element — the same canvas machinery the `marker` package supplies to every overview map — so the rules that style editor layers style these too. Without the `marker` package installed the widget degrades to an empty strip.
 
 The widget subscribes to theme and stylesheet changes and repaints itself when the marker styles actually change, so a theme switch needs no work from the consumer. A container **resize** is not observed — call `update()` when your view changes size.
 

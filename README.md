@@ -2,16 +2,15 @@
 
 Show markers on the scrollbar.
 
-Core package providing scrollmap infrastructure for text editors and custom panes.
+A strip beside every editor scrollbar drawing the layers the `marker` package computes — git changes, linter messages, search hits and more — plus the same widget for custom panes.
 
 ## Features
 
-- **Layer system**: multiple packages can add markers to the scrollbar.
+- **Layer system**: marker layers registered with the `marker` hub are drawn beside the scrollbar, computed once and shared with the minimap.
 - **Column layout**: markers positioned in the left, center, or right column, or spanning the full width.
-- **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux.
-- **Toggle panel**: enable or disable layers individually.
+- **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux, and floats at its own width where scrollbars overlay the content.
+- **Toggle panel**: enable or disable layers individually, for this strip alone.
 - **Simplemap API**: support for non-editor panes like the PDF viewer.
-- **Extensible**: other packages provide layers via the `marker.layer` service, and the same layer draws on the minimap.
 
 ## Installation
 
@@ -51,7 +50,7 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **[marker.layer](docs/marker.layer.md)** (`^1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
+- **[marker.registry](https://lumine-code.github.io/docs.html#services/marker.registry)** (`^1.0.0`): consumed to read every editor's computed marker layers and the toolkit that draws them.
 - **[scrollmap.widget](docs/scrollmap.widget.md)** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
 
 ## Contributing

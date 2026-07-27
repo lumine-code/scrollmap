@@ -27,9 +27,9 @@
     "format:check": "prettier --check ."
   },
   "consumedServices": {
-    "marker.layer": {
+    "marker.registry": {
       "versions": {
-        "^1.0.0": "consumeMarkerLayer"
+        "^1.0.0": "consumeMarkerRegistry"
       }
     }
   },
@@ -39,10 +39,6 @@
         "1.0.0": "provideScrollmapWidget"
       }
     }
-  },
-  "dependencies": {
-    "@lumine-code/select-list": "https://github.com/lumine-code/select-list.git#a201dae6a0ea6954cb9a905be4a718af697d9f78",
-    "@lumine-code/marker-host": "file:../../pkg_nodejs/marker-host"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
