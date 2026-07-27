@@ -11,7 +11,7 @@ Core package providing scrollmap infrastructure for text editors and custom pane
 - **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux.
 - **Toggle panel**: enable or disable layers individually.
 - **Simplemap API**: support for non-editor panes like the PDF viewer.
-- **Extensible**: other packages provide layers via the `scrollmap.layer` service.
+- **Extensible**: other packages provide layers via the `marker.layer` service, and the same layer draws on the minimap.
 
 ## Installation
 
@@ -51,7 +51,7 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **[scrollmap.layer](docs/scrollmap.layer.md)** (`^1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
+- **[marker.layer](docs/marker.layer.md)** (`^1.0.0`): consumed to let other packages register marker layers rendered on the editor scrollbar.
 - **[scrollmap.widget](docs/scrollmap.widget.md)** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
 
 ## Contributing

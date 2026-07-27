@@ -224,35 +224,38 @@ describe("scrollmap", () => {
       expect(scrollmap.element.querySelector("canvas.scrollmap-canvas")).not.toBeNull();
     });
 
-    it("adds layers from scrollmap service providers and renders their items", async () => {
-      const disposable = mainModule.consumeScrollmapLayer({
+    it("adds layers from marker.layer providers and renders their items", async () => {
+      const disposable = mainModule.consumeMarkerLayer({
         name: "speclayer",
         description: "Spec layer",
         getItems: () => [{ row: 0 }, { row: 5, end: 8, cls: "extra" }],
       });
 
-      const layer = scrollmap.layers.get("speclayer");
+      const layer = scrollmap.set.layers.get("speclayer");
       expect(layer).toBeDefined();
 
       // Flush the two throttled stages (scrollmap update, then layer update).
       advanceClock(30);
       advanceClock(30);
       expect(layer.items.length).toBe(2);
-      expect(layer.items[0].className).toContain("marker-speclayer");
-      expect(layer.items[1].className).toContain("extra");
-      expect(typeof layer.items[0].pix).toBe("number");
-      expect(typeof layer.items[1].piz).toBe("number");
+
+      const regions = [];
+      scrollmap.regionsFor(layer, 1, 1, regions);
+      expect(regions[0].className).toContain("marker-speclayer");
+      expect(regions[1].className).toContain("extra");
+      expect(typeof regions[0].y).toBe("number");
+      expect(regions[1].height).toBeGreaterThan(regions[0].height);
 
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       await waitFor(() => canvasHasInk(canvas));
 
       disposable.dispose();
-      expect(scrollmap.layers.has("speclayer")).toBe(false);
-      expect(mainModule.providers.has("speclayer")).toBe(false);
+      expect(scrollmap.set.layers.has("speclayer")).toBe(false);
+      expect(mainModule.host.providers.has("speclayer")).toBe(false);
     });
 
     it("sorts and merges adjacent items for layers with the merge flag", () => {
-      mainModule.consumeScrollmapLayer({
+      mainModule.consumeMarkerLayer({
         name: "speclayer",
         merge: true,
         getItems: () => [
@@ -268,7 +271,7 @@ describe("scrollmap", () => {
       advanceClock(30);
       advanceClock(30);
 
-      const layer = scrollmap.layers.get("speclayer");
+      const layer = scrollmap.set.layers.get("speclayer");
       const items = layer.items.map(({ row, end, cls }) => ({ row, end, cls }));
       expect(items).toEqual([
         { row: 0, end: 2, cls: undefined },
@@ -279,7 +282,7 @@ describe("scrollmap", () => {
 
     it("empties layers holding more items than their threshold setting", () => {
       atom.config.set("scrollmap.specThreshold", 2);
-      mainModule.consumeScrollmapLayer({
+      mainModule.consumeMarkerLayer({
         name: "speclayer",
         threshold: "scrollmap.specThreshold",
         getItems: () => [{ row: 0 }, { row: 5 }, { row: 10 }],
@@ -288,7 +291,7 @@ describe("scrollmap", () => {
       advanceClock(30);
       advanceClock(30);
 
-      const layer = scrollmap.layers.get("speclayer");
+      const layer = scrollmap.set.layers.get("speclayer");
       expect(layer.items).toEqual([]);
 
       // Raising the limit re-runs the layer through the config subscription.
@@ -299,7 +302,7 @@ describe("scrollmap", () => {
 
     it("leaves the provider's item objects untouched", () => {
       const items = [{ row: 0 }, { row: 5, end: 8 }];
-      mainModule.consumeScrollmapLayer({
+      mainModule.consumeMarkerLayer({
         name: "speclayer",
         getItems: () => items,
       });
@@ -307,33 +310,33 @@ describe("scrollmap", () => {
       advanceClock(30);
       advanceClock(30);
 
-      expect(scrollmap.layers.get("speclayer").items[0].className).toBeDefined();
+      expect(scrollmap.set.layers.get("speclayer").items.length).toBe(2);
       expect(items).toEqual([{ row: 0 }, { row: 5, end: 8 }]);
     });
 
     it("refuses a second provider with an already registered name", () => {
-      const first = mainModule.consumeScrollmapLayer({
+      const first = mainModule.consumeMarkerLayer({
         name: "speclayer",
         getItems: () => [{ row: 0 }],
       });
-      const second = mainModule.consumeScrollmapLayer({
+      const second = mainModule.consumeMarkerLayer({
         name: "speclayer",
         getItems: () => [{ row: 5 }],
       });
 
-      expect(scrollmap.layers.has("speclayer")).toBe(true);
+      expect(scrollmap.set.layers.has("speclayer")).toBe(true);
 
       // Disposing the rejected consumer must not unregister the winner.
       second.dispose();
-      expect(mainModule.providers.has("speclayer")).toBe(true);
-      expect(scrollmap.layers.has("speclayer")).toBe(true);
+      expect(mainModule.host.providers.has("speclayer")).toBe(true);
+      expect(scrollmap.set.layers.has("speclayer")).toBe(true);
 
       first.dispose();
-      expect(mainModule.providers.has("speclayer")).toBe(false);
+      expect(mainModule.host.providers.has("speclayer")).toBe(false);
     });
 
     it("applies the layer position class and lets an item override it", () => {
-      mainModule.consumeScrollmapLayer({
+      mainModule.consumeMarkerLayer({
         name: "speclayer",
         position: "left",
         getItems: () => [{ row: 0 }, { row: 5, end: 8, position: "full", cls: "extra" }],
@@ -342,13 +345,14 @@ describe("scrollmap", () => {
       advanceClock(30);
       advanceClock(30);
 
-      const layer = scrollmap.layers.get("speclayer");
-      expect(layer.items[0].className).toBe("marker marker-speclayer left");
-      expect(layer.items[1].className).toBe("marker marker-speclayer full extra");
+      const regions = [];
+      scrollmap.regionsFor(scrollmap.set.layers.get("speclayer"), 1, 1, regions);
+      expect(regions[0].className).toBe("marker marker-speclayer left");
+      expect(regions[1].className).toBe("marker marker-speclayer full extra");
     });
 
     it("skips layers listed in the disabledLayers setting", async () => {
-      mainModule.consumeScrollmapLayer({
+      mainModule.consumeMarkerLayer({
         name: "speclayer",
         getItems: () => [{ row: 0 }],
       });
@@ -356,7 +360,7 @@ describe("scrollmap", () => {
 
       advanceClock(30);
       advanceClock(30);
-      await waitFor(() => scrollmap.layers.get("speclayer").items.length === 1);
+      await waitFor(() => scrollmap.set.layers.get("speclayer").items.length === 1);
 
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       // Draw once more with the layer disabled and verify nothing is painted.
@@ -368,7 +372,7 @@ describe("scrollmap", () => {
       let canvas;
 
       beforeEach(async () => {
-        mainModule.consumeScrollmapLayer({
+        mainModule.consumeMarkerLayer({
           name: "speclayer",
           getItems: () => [{ row: 0, end: 99 }],
         });
@@ -426,7 +430,7 @@ describe("scrollmap", () => {
   describe("scrollmap:toggle-layers", () => {
     it("opens the layer toggle panel listing registered providers", async () => {
       const mainModule = await activate();
-      mainModule.consumeScrollmapLayer({
+      mainModule.consumeMarkerLayer({
         name: "speclayer",
         description: "Spec layer",
         getItems: () => [],

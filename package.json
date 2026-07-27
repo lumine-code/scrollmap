@@ -27,9 +27,9 @@
     "format:check": "prettier --check ."
   },
   "consumedServices": {
-    "scrollmap.layer": {
+    "marker.layer": {
       "versions": {
-        "^1.0.0": "consumeScrollmapLayer"
+        "^1.0.0": "consumeMarkerLayer"
       }
     }
   },
@@ -41,7 +41,8 @@
     }
   },
   "dependencies": {
-    "@lumine-code/select-list": "https://github.com/lumine-code/select-list.git#a201dae6a0ea6954cb9a905be4a718af697d9f78"
+    "@lumine-code/select-list": "https://github.com/lumine-code/select-list.git#a201dae6a0ea6954cb9a905be4a718af697d9f78",
+    "@lumine-code/marker-host": "file:../../pkg_nodejs/marker-host"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -60,6 +61,13 @@
         "type": "string"
       },
       "default": []
+    },
+    "thresholdScale": {
+      "title": "Threshold Scale",
+      "description": "Multiplies every layer's own marker limit before it decides to draw nothing. Raise it to keep noisy layers visible on the strip.",
+      "type": "number",
+      "minimum": 0,
+      "default": 1
     }
   }
 }
