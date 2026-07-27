@@ -50,7 +50,7 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **[marker.registry](https://lumine-code.github.io/docs.html#services/marker.registry)** (`^1.0.0`): consumed to read every editor's computed marker layers and the toolkit that draws them.
+- **marker.registry** (`^1.0.0`): consumed to read every editor's computed marker layers and the toolkit that draws them.
 - **[scrollmap.widget](docs/scrollmap.widget.md)** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
 
 ## Contributing
