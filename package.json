@@ -62,6 +62,13 @@
       },
       "default": []
     },
+    "overlayWidth": {
+      "title": "Overlay Width",
+      "description": "Width of the strip, in pixels, on platforms whose scrollbars float over the content and reserve no space of their own — macOS, and Linux with overlay scrollbars. Where the scrollbar does reserve space the strip matches it and this is unused.",
+      "type": "number",
+      "minimum": 0,
+      "default": 8
+    },
     "thresholdScale": {
       "title": "Threshold Scale",
       "description": "Multiplies every layer's own marker limit before it decides to draw nothing. Raise it to keep noisy layers visible on the strip.",

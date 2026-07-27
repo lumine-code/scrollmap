@@ -251,6 +251,25 @@ describe("scrollmap", () => {
       expect(shortMap.element.offsetWidth).toBeGreaterThan(0);
     });
 
+    // Where scrollbars float over the content -- macOS, and Linux with overlay
+    // scrollbars -- the component's measurement is 0 and correct. The strip has
+    // to float too rather than collapse to nothing.
+    it("falls back to the overlay width when the scrollbar reserves no space", async () => {
+      atom.config.set("scrollmap.overlayWidth", 9);
+      spyOn(editorElement.component, "getVerticalScrollbarWidth").and.returnValue(0);
+
+      mainModule.consumeMarkerLayer({
+        name: "speclayer",
+        getItems: () => [{ row: 0, end: 99 }],
+      });
+      advanceClock(30);
+      advanceClock(30);
+
+      const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
+      await waitFor(() => canvasHasInk(canvas));
+      expect(scrollmap.element.style.width).toBe("9px");
+    });
+
     it("attaches a scrollmap element next to the editor scrollbar", () => {
       expect(scrollmap.element.classList.contains("scrollmap")).toBe(true);
       expect(editorElement.contains(scrollmap.element)).toBe(true);
