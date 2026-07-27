@@ -218,6 +218,39 @@ describe("scrollmap", () => {
       scrollmap = mainModule.scrollmapForEditor(editor);
     });
 
+    // The strip used to take its width from a CSS variable measured off a live
+    // scrollbar element, which reports 0 for an editor whose content fits: the
+    // markers of a short file stayed invisible until a file long enough to
+    // scroll was opened.
+    it("draws for an editor too short to have a scrollbar", async () => {
+      const shortEditor = await atom.workspace.open();
+      shortEditor.setText("one line");
+      const shortElement = atom.views.getView(shortEditor);
+      await waitFor(() => mainModule.scrollmapForEditor(shortEditor));
+      const shortMap = mainModule.scrollmapForEditor(shortEditor);
+
+      // No scrollbar is rendered, which is the whole point of the case.
+      const scrollbar = shortElement.querySelector(".vertical-scrollbar");
+      expect(scrollbar.offsetWidth - scrollbar.clientWidth).toBe(0);
+
+      // And the strip may not fall back on a width some other editor happened
+      // to publish: this editor's own component is the only source.
+      const root = document.documentElement;
+      root.style.setProperty("--scrollbar-width", "0");
+      root.style.setProperty("--scrollbar-bottom", "0");
+
+      mainModule.consumeMarkerLayer({
+        name: "speclayer",
+        getItems: () => [{ row: 0 }],
+      });
+      advanceClock(30);
+      advanceClock(30);
+
+      const canvas = shortMap.element.querySelector("canvas.scrollmap-canvas");
+      await waitFor(() => canvasHasInk(canvas));
+      expect(shortMap.element.offsetWidth).toBeGreaterThan(0);
+    });
+
     it("attaches a scrollmap element next to the editor scrollbar", () => {
       expect(scrollmap.element.classList.contains("scrollmap")).toBe(true);
       expect(editorElement.contains(scrollmap.element)).toBe(true);
@@ -445,9 +478,9 @@ describe("scrollmap", () => {
 
     it("toggles layers in and out of the disabledLayers setting", async () => {
       const mainModule = await activate();
-      mainModule.toggleView.toggleLayer("speclayer");
+      mainModule.picker.toggle({ name: "speclayer" });
       expect(atom.config.get("scrollmap.disabledLayers")).toContain("speclayer");
-      mainModule.toggleView.toggleLayer("speclayer");
+      mainModule.picker.toggle({ name: "speclayer" });
       expect(atom.config.get("scrollmap.disabledLayers")).not.toContain("speclayer");
     });
   });
