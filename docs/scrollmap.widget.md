@@ -9,7 +9,7 @@ The `Simplemap` class, so a package can draw scrollbar markers beside a pane tha
 | Consumed by | `consumeScrollmapWidget(Simplemap)`                     |
 | Owner       | [`scrollmap`](https://github.com/lumine-code/scrollmap) |
 
-Editor panes get their markers from [`scrollmap.layer`](scrollmap.layer.md); this service exists for everything else — a PDF page, a notebook, a rendered preview — where there is no `TextEditor` and no screen row to anchor to. Positions are percentages of the pane's height instead.
+Editor panes get their markers from [`marker.layer`](marker.layer.md); this service exists for everything else — a PDF page, a notebook, a rendered preview — where there is no `TextEditor` and no screen row to anchor to. Positions are percentages of the pane's height instead.
 
 ## Registration
 
