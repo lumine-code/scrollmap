@@ -19,6 +19,9 @@
   "engines": {
     "atom": ">=1.100.0 <2.0.0"
   },
+  "backgroundTips": [
+    "You can choose which marker layers the scrollbar shows with {{ 'scrollmap:toggle-layers' | keystroke }}"
+  ],
   "main": "./lib/main",
   "scripts": {
     "test": "lumine --test spec",
