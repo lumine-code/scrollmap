@@ -23,6 +23,14 @@
     "You can choose which marker layers the scrollbar shows with {{ 'scrollmap:toggle-layers' | keystroke }}"
   ],
   "main": "./lib/main",
+  "files": [
+    "docs",
+    "keymaps",
+    "lib",
+    "menus",
+    "spec",
+    "styles"
+  ],
   "scripts": {
     "test": "lumine --test spec",
     "lint": "eslint . --max-warnings 0",
