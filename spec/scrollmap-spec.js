@@ -1,5 +1,3 @@
-const path = require("path");
-
 describe("scrollmap", () => {
   let workspaceElement, specStyle, styleSheets, markerMain;
 
@@ -27,11 +25,10 @@ describe("scrollmap", () => {
   }
 
   // The strip draws layers the marker hub computes, so the specs run against
-  // the real hub package -- the sibling repo in the workspace and in CI alike.
+  // the real hub package -- bundled with the editor, so the name resolves
+  // in the workspace and in CI alike.
   async function activate() {
-    const markerPack = await atom.packages.activatePackage(
-      path.join(__dirname, "..", "..", "marker"),
-    );
+    const markerPack = await atom.packages.activatePackage("marker");
     markerMain = markerPack.mainModule;
     const pack = await atom.packages.activatePackage("scrollmap");
     return pack.mainModule;

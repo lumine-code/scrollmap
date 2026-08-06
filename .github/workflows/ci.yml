@@ -44,7 +44,7 @@ jobs:
   integration:
     # Run the Jasmine spec suite inside a real Lumine build; the specs exercise
     # the editor runtime (text editors, modal panels, and command dispatch) and
-    # activate the marker hub the strip draws from.
+    # activate the marker hub the strip draws from, which the editor bundles.
     name: Lumine integration specs
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -54,10 +54,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: scrollmap
-      - uses: actions/checkout@v6
-        with:
-          repository: lumine-code/marker
-          path: marker
       - uses: actions/checkout@v6
         with:
           repository: lumine-code/lumine
