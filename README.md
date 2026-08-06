@@ -35,9 +35,9 @@ Markers are drawn on a canvas for performance. Existing marker CSS classes are s
 
 Marker widths use percentages (40% center, 20% sides) to scale proportionally across platforms.
 
-The style can be adjusted according to user preferences in the `styles.less` file, e.g. change marker width and opacity or style specific layers:
+The style can be adjusted according to user preferences in the `styles.css` file, e.g. change marker width and opacity or style specific layers:
 
-```less
+```css
 .scrollmap .marker {
   width: 6px;
   opacity: 0.8;
