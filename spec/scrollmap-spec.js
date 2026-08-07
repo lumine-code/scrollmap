@@ -87,13 +87,13 @@ describe("scrollmap", () => {
   });
 
   describe("activation", () => {
-    it("activates and registers the toggle command", async () => {
+    it("activates and registers the layer picker command", async () => {
       await activate();
       expect(atom.packages.isPackageActive("scrollmap")).toBe(true);
       const commands = atom.commands
         .findCommands({ target: workspaceElement })
         .map((command) => command.name);
-      expect(commands).toContain("scrollmap:toggle-layers");
+      expect(commands).toContain("scrollmap:show-layers");
     });
 
     it("initializes the scrollbar CSS variables on the root element", async () => {
@@ -497,8 +497,8 @@ describe("scrollmap", () => {
     });
   });
 
-  describe("scrollmap:toggle-layers", () => {
-    it("opens the layer toggle panel listing registered providers", async () => {
+  describe("scrollmap:show-layers", () => {
+    it("opens the layer picker listing registered providers", async () => {
       await activate();
       markerMain.consumeMarkerLayer({
         name: "speclayer",
@@ -506,11 +506,25 @@ describe("scrollmap", () => {
         getItems: () => [],
       });
 
-      atom.commands.dispatch(workspaceElement, "scrollmap:toggle-layers");
+      atom.commands.dispatch(workspaceElement, "scrollmap:show-layers");
       const view = await waitFor(() => document.querySelector(".scrollmap-view"));
       await waitFor(() => view.textContent.includes("speclayer"));
 
-      atom.commands.dispatch(workspaceElement, "scrollmap:toggle-layers");
+      atom.commands.dispatch(workspaceElement, "scrollmap:show-layers");
+    });
+
+    it("says why it declined when the marker hub was never consumed", async () => {
+      const mainModule = await activate();
+      // Everything that draws lives under the hub consumer, so without it there
+      // is no picker. A silent no-op leaves no way to tell an empty list from a
+      // missing package.
+      mainModule.picker = null;
+
+      atom.commands.dispatch(workspaceElement, "scrollmap:show-layers");
+
+      const [warning] = atom.notifications.getNotifications();
+      expect(warning.getType()).toBe("warning");
+      expect(warning.getMessage()).toContain("marker package");
     });
 
     it("toggles layers in and out of the disabledLayers setting", async () => {

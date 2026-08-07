@@ -5,7 +5,7 @@
       "submenu": [
         {
           "label": "Scrollmap",
-          "submenu": [{ "label": "Toggle Layers", "command": "scrollmap:toggle-layers" }]
+          "submenu": [{ "label": "Show Layers", "command": "scrollmap:show-layers" }]
         }
       ]
     }
