@@ -28,9 +28,9 @@ describe("scrollmap", () => {
   // the real hub package -- bundled with the editor, so the name resolves
   // in the workspace and in CI alike.
   async function activate() {
-    const markerPack = await atom.packages.activatePackage("marker");
+    const markerPack = await lumine.packages.activatePackage("marker");
     markerMain = markerPack.mainModule;
-    const pack = await atom.packages.activatePackage("scrollmap");
+    const pack = await lumine.packages.activatePackage("scrollmap");
     return pack.mainModule;
   }
 
@@ -45,9 +45,9 @@ describe("scrollmap", () => {
   }
 
   // Restyle the window the way a theme switch does: attach a stylesheet through
-  // `atom.styles`, which is what announces the swap to its consumers.
+  // `lumine.styles`, which is what announces the swap to its consumers.
   function restyle(css) {
-    const disposable = atom.styles.addStyleSheet(css);
+    const disposable = lumine.styles.addStyleSheet(css);
     styleSheets.push(disposable);
     return disposable;
   }
@@ -64,7 +64,7 @@ describe("scrollmap", () => {
   }
 
   beforeEach(() => {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = lumine.views.getView(lumine.workspace);
     workspaceElement.style.width = "800px";
     workspaceElement.style.height = "600px";
     jasmine.attachToDOM(workspaceElement);
@@ -89,8 +89,8 @@ describe("scrollmap", () => {
   describe("activation", () => {
     it("activates and registers the layer picker command", async () => {
       await activate();
-      expect(atom.packages.isPackageActive("scrollmap")).toBe(true);
-      const commands = atom.commands
+      expect(lumine.packages.isPackageActive("scrollmap")).toBe(true);
+      const commands = lumine.commands
         .findCommands({ target: workspaceElement })
         .map((command) => command.name);
       expect(commands).toContain("scrollmap:show-layers");
@@ -214,9 +214,9 @@ describe("scrollmap", () => {
     let editor, editorElement, mainModule, scrollmap;
 
     beforeEach(async () => {
-      editor = await atom.workspace.open();
+      editor = await lumine.workspace.open();
       editor.setText(Array(100).fill("hello world").join("\n"));
-      editorElement = atom.views.getView(editor);
+      editorElement = lumine.views.getView(editor);
       await waitFor(() => editorElement.querySelector(".vertical-scrollbar"));
       mainModule = await activate();
       await waitFor(() => mainModule.scrollmapForEditor(editor));
@@ -228,9 +228,9 @@ describe("scrollmap", () => {
     // markers of a short file stayed invisible until a file long enough to
     // scroll was opened.
     it("draws for an editor too short to have a scrollbar", async () => {
-      const shortEditor = await atom.workspace.open();
+      const shortEditor = await lumine.workspace.open();
       shortEditor.setText("one line");
-      const shortElement = atom.views.getView(shortEditor);
+      const shortElement = lumine.views.getView(shortEditor);
       await waitFor(() => mainModule.scrollmapForEditor(shortEditor));
       const shortMap = mainModule.scrollmapForEditor(shortEditor);
 
@@ -259,7 +259,7 @@ describe("scrollmap", () => {
     // scrollbars -- the component's measurement is 0 and correct. The strip has
     // to float too rather than collapse to nothing.
     it("falls back to the overlay width when the scrollbar reserves no space", async () => {
-      atom.config.set("scrollmap.overlayWidth", 9);
+      lumine.config.set("scrollmap.overlayWidth", 9);
       spyOn(editorElement.component, "getVerticalScrollbarWidth").and.returnValue(0);
 
       markerMain.consumeMarkerLayer({
@@ -335,7 +335,7 @@ describe("scrollmap", () => {
     // The hub keeps items full-length whatever the threshold says; hiding a
     // noisy layer is this strip's own draw-time call, scaled by its setting.
     it("keeps a layer's items past its threshold but paints nothing", async () => {
-      atom.config.set("scrollmap.specThreshold", 2);
+      lumine.config.set("scrollmap.specThreshold", 2);
       const getItems = jasmine
         .createSpy("getItems")
         .and.returnValue([{ row: 0 }, { row: 5 }, { row: 10 }]);
@@ -358,16 +358,16 @@ describe("scrollmap", () => {
       // Raising the renderer's own scale shows the layer again -- without the
       // hub ever re-running getItems.
       const computes = getItems.calls.count();
-      atom.config.set("scrollmap.thresholdScale", 2);
+      lumine.config.set("scrollmap.thresholdScale", 2);
       scrollmap.drawMarkers();
       expect(canvasHasInk(canvas)).toBe(true);
       expect(getItems.calls.count()).toBe(computes);
 
       // And so does raising the layer's own limit.
-      atom.config.set("scrollmap.thresholdScale", 1);
+      lumine.config.set("scrollmap.thresholdScale", 1);
       scrollmap.drawMarkers();
       expect(canvasHasInk(canvas)).toBe(false);
-      atom.config.set("scrollmap.specThreshold", 5);
+      lumine.config.set("scrollmap.specThreshold", 5);
       scrollmap.drawMarkers();
       expect(canvasHasInk(canvas)).toBe(true);
       expect(getItems.calls.count()).toBe(computes);
@@ -428,7 +428,7 @@ describe("scrollmap", () => {
         name: "speclayer",
         getItems: () => [{ row: 0 }],
       });
-      atom.config.set("scrollmap.disabledLayers", ["speclayer"]);
+      lumine.config.set("scrollmap.disabledLayers", ["speclayer"]);
 
       advanceClock(30);
       await waitFor(() => scrollmap.handle.layerFor("speclayer").items.length === 1);
@@ -473,7 +473,7 @@ describe("scrollmap", () => {
         // `updateAppearance` mutates the document from inside the cross-fade and
         // announces it with `onDidChangeActiveThemes`. No stylesheet lands, so
         // that event is the only signal this path gives.
-        await atom.themes.updateAppearance(() => {
+        await lumine.themes.updateAppearance(() => {
           specStyle.textContent = ".marker.marker-speclayer { background-color: rgb(0, 200, 0); }";
         });
 
@@ -506,11 +506,11 @@ describe("scrollmap", () => {
         getItems: () => [],
       });
 
-      atom.commands.dispatch(workspaceElement, "scrollmap:show-layers");
+      lumine.commands.dispatch(workspaceElement, "scrollmap:show-layers");
       const view = await waitFor(() => document.querySelector(".scrollmap-view"));
       await waitFor(() => view.textContent.includes("speclayer"));
 
-      atom.commands.dispatch(workspaceElement, "scrollmap:show-layers");
+      lumine.commands.dispatch(workspaceElement, "scrollmap:show-layers");
     });
 
     it("says why it declined when the marker hub was never consumed", async () => {
@@ -520,9 +520,9 @@ describe("scrollmap", () => {
       // missing package.
       mainModule.picker = null;
 
-      atom.commands.dispatch(workspaceElement, "scrollmap:show-layers");
+      lumine.commands.dispatch(workspaceElement, "scrollmap:show-layers");
 
-      const [warning] = atom.notifications.getNotifications();
+      const [warning] = lumine.notifications.getNotifications();
       expect(warning.getType()).toBe("warning");
       expect(warning.getMessage()).toContain("marker package");
     });
@@ -530,9 +530,9 @@ describe("scrollmap", () => {
     it("toggles layers in and out of the disabledLayers setting", async () => {
       const mainModule = await activate();
       mainModule.picker.toggle({ name: "speclayer" });
-      expect(atom.config.get("scrollmap.disabledLayers")).toContain("speclayer");
+      expect(lumine.config.get("scrollmap.disabledLayers")).toContain("speclayer");
       mainModule.picker.toggle({ name: "speclayer" });
-      expect(atom.config.get("scrollmap.disabledLayers")).not.toContain("speclayer");
+      expect(lumine.config.get("scrollmap.disabledLayers")).not.toContain("speclayer");
     });
   });
 });

@@ -18,7 +18,7 @@ To install `scrollmap` search for _scrollmap_ in the Install pane of the Lumine 
 
 ## Commands
 
-Commands available in `atom-workspace`:
+Commands available in `lumine-workspace`:
 
 - `scrollmap:show-layers`: open a picker to enable or disable marker layers.
 
