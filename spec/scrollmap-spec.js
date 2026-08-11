@@ -1,5 +1,6 @@
 describe("scrollmap", () => {
   let workspaceElement, specStyle, styleSheets, markerMain;
+  const readbackCanvases = new WeakMap();
 
   // The spec runner freezes setTimeout, so poll on animation frames instead.
   function waitFor(condition, { frames = 600 } = {}) {
@@ -36,8 +37,28 @@ describe("scrollmap", () => {
 
   // Markers are drawn centered on the map, so the middle of the canvas is where
   // the color of a marker spanning the whole height lands.
+  function readbackContext(canvas) {
+    let readback = readbackCanvases.get(canvas);
+    if (!readback) {
+      const readbackCanvas = document.createElement("canvas");
+      readback = {
+        canvas: readbackCanvas,
+        context: readbackCanvas.getContext("2d", { willReadFrequently: true }),
+      };
+      readbackCanvases.set(canvas, readback);
+    }
+
+    if (readback.canvas.width !== canvas.width || readback.canvas.height !== canvas.height) {
+      readback.canvas.width = canvas.width;
+      readback.canvas.height = canvas.height;
+    }
+    readback.context.clearRect(0, 0, canvas.width, canvas.height);
+    readback.context.drawImage(canvas, 0, 0);
+    return readback.context;
+  }
+
   function markerColor(canvas) {
-    const ctx = canvas.getContext("2d");
+    const ctx = readbackContext(canvas);
     const x = Math.floor(canvas.width / 2);
     const y = Math.floor(canvas.height / 2);
     const [r, g, b, a] = ctx.getImageData(x, y, 1, 1).data;
@@ -53,7 +74,7 @@ describe("scrollmap", () => {
   }
 
   function canvasHasInk(canvas) {
-    const ctx = canvas.getContext("2d");
+    const ctx = readbackContext(canvas);
     const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
     for (let i = 3; i < data.length; i += 4) {
       if (data[i] > 0) {
