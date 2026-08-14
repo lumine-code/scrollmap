@@ -14,7 +14,7 @@ A strip beside every editor scrollbar drawing the layers the `marker` package co
 
 ## Installation
 
-To install `scrollmap` search for _scrollmap_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/scrollmap`.
+To install `scrollmap` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/scrollmap`.
 
 ## Commands
 
@@ -50,8 +50,8 @@ The style can be adjusted according to user preferences in the `styles.css` file
 
 ## Services
 
-- **marker.registry** (`^1.0.0`): consumed to read every editor's computed marker layers and the toolkit that draws them.
-- **[scrollmap.widget](docs/scrollmap.widget.md)** (`1.0.0`): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
+- `marker.registry`: consumed to read every editor's computed marker layers and the toolkit that draws them.
+- [`scrollmap.widget`](docs/scrollmap.widget.md): provided to expose a standalone scrollbar-marker widget class for non-editor panes.
 
 ## Contributing
 
