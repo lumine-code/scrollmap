@@ -29,6 +29,10 @@ describe("scrollmap", () => {
   // the real hub package -- bundled with the editor, so the name resolves
   // in the workspace and in CI alike.
   async function activate() {
+    // The hub ships a built-in cursors layer, and it draws on the same canvas
+    // these specs read back. They assert what one layer under test paints, so
+    // it is turned off rather than subtracted from every readback.
+    lumine.config.set("marker.cursors.enabled", false);
     const markerPack = await lumine.packages.activatePackage("marker");
     markerMain = markerPack.mainModule;
     const pack = await lumine.packages.activatePackage("scrollmap");
