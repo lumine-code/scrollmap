@@ -357,6 +357,35 @@ describe("scrollmap", () => {
       ]);
     });
 
+    // `did-update-decorations` arrives on every keystroke of a decorated
+    // cursor layer, so a draw that changes nothing has to cost a comparison,
+    // not a canvas rebuild.
+    it("skips the repaint when nothing it draws changed", () => {
+      let rows = [{ row: 1 }, { row: 5 }];
+      markerMain.consumeMarkerLayer({ name: "speclayer", getItems: () => rows });
+      advanceClock(30);
+
+      spyOn(scrollmap.canvas, "draw").and.callThrough();
+      scrollmap.drawMarkers();
+      expect(scrollmap.canvas.draw.calls.count()).toBe(1);
+
+      // Same geometry, same items arrays: the second call is free.
+      scrollmap.drawMarkers();
+      expect(scrollmap.canvas.draw.calls.count()).toBe(1);
+
+      // A recompute that reproduces the same markers keeps the array
+      // identity, so it stays free too.
+      scrollmap.handle.updateSync();
+      scrollmap.drawMarkers();
+      expect(scrollmap.canvas.draw.calls.count()).toBe(1);
+
+      // Markers that really moved repaint.
+      rows = [{ row: 9 }];
+      scrollmap.handle.updateSync();
+      scrollmap.drawMarkers();
+      expect(scrollmap.canvas.draw.calls.count()).toBe(2);
+    });
+
     // The hub keeps items full-length whatever the threshold says; hiding a
     // noisy layer is this strip's own draw-time call, scaled by its setting.
     it("keeps a layer's items past its threshold but paints nothing", async () => {
