@@ -10,7 +10,7 @@ A strip beside every editor scrollbar drawing the layers the `marker` package co
 - **Column layout**: markers positioned in the left, center, or right column, or spanning the full width.
 - **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux, and floats at its own width where scrollbars overlay the content.
 - **Toggle panel**: enable or disable layers individually, for this strip alone.
-- **Simplemap API**: support for non-editor panes like the PDF viewer.
+- **Simplemap API**: support for non-editor panes like the PDF view.
 
 ## Installation
 
