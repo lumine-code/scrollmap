@@ -22,6 +22,9 @@
   "backgroundTips": [
     "You can choose which marker layers the scrollbar shows with {{ 'scrollmap:show-layers' | keystroke }}"
   ],
+  "specPackages": [
+    "marker"
+  ],
   "main": "./lib/main",
   "files": [
     "docs",
