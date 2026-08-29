@@ -138,7 +138,7 @@ describe("scrollmap", () => {
     });
 
     it("provides an instantiable class exposing element, setItems and destroy", () => {
-      const simplemap = new Simplemap();
+      const simplemap = new Simplemap(document);
       expect(simplemap.element instanceof HTMLElement).toBe(true);
       expect(simplemap.element.classList.contains("simplemap")).toBe(true);
       expect(simplemap.element.querySelector("canvas.scrollmap-canvas")).not.toBeNull();
@@ -151,7 +151,7 @@ describe("scrollmap", () => {
       container.style.cssText = "position: relative; width: 20px; height: 200px;";
       workspaceElement.appendChild(container);
 
-      const simplemap = new Simplemap();
+      const simplemap = new Simplemap(document);
       simplemap.element.style.width = "20px";
       simplemap.element.style.height = "200px";
       container.appendChild(simplemap.element);
@@ -181,7 +181,7 @@ describe("scrollmap", () => {
       container.style.cssText = "position: relative; width: 20px; height: 200px;";
       workspaceElement.appendChild(container);
 
-      const simplemap = new Simplemap();
+      const simplemap = new Simplemap(document);
       simplemap.element.style.width = "20px";
       simplemap.element.style.height = "200px";
       container.appendChild(simplemap.element);
@@ -207,7 +207,7 @@ describe("scrollmap", () => {
       container.style.cssText = "position: relative; width: 20px; height: 200px;";
       workspaceElement.appendChild(container);
 
-      const simplemap = new Simplemap();
+      const simplemap = new Simplemap(document);
       simplemap.element.style.width = "20px";
       simplemap.element.style.height = "200px";
       container.appendChild(simplemap.element);
@@ -225,7 +225,7 @@ describe("scrollmap", () => {
     });
 
     it("stops following restyles once destroyed", async () => {
-      const simplemap = new Simplemap();
+      const simplemap = new Simplemap(document);
       simplemap.destroy();
 
       spyOn(simplemap, "drawMarkers");
@@ -302,6 +302,27 @@ describe("scrollmap", () => {
       expect(scrollmap.element.classList.contains("scrollmap")).toBe(true);
       expect(editorElement.contains(scrollmap.element)).toBe(true);
       expect(scrollmap.element.querySelector("canvas.scrollmap-canvas")).not.toBeNull();
+    });
+
+    it("rebinds observers and scheduled frames after the editor changes Documents", () => {
+      const originalParent = editorElement.parentNode;
+      const frame = document.createElement("iframe");
+      jasmine.attachToDOM(frame);
+
+      scrollmap.prepareSurfaceTransition();
+      frame.contentDocument.body.appendChild(editorElement);
+      scrollmap.bindSurface();
+
+      expect(scrollmap.element.ownerDocument).toBe(frame.contentDocument);
+      expect(scrollmap.resizeObserver instanceof frame.contentWindow.ResizeObserver).toBe(true);
+      expect(scrollmap.rafWindow).toBe(frame.contentWindow);
+
+      scrollmap.prepareSurfaceTransition();
+      originalParent.appendChild(editorElement);
+      scrollmap.bindSurface();
+      expect(scrollmap.resizeObserver instanceof ResizeObserver).toBe(true);
+      expect(scrollmap.rafWindow).toBe(window);
+      frame.remove();
     });
 
     it("draws the layers the marker hub computes", async () => {
