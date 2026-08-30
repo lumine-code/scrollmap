@@ -146,6 +146,26 @@ describe("scrollmap", () => {
       expect(typeof simplemap.destroy).toBe("function");
     });
 
+    it("seeds scrollbar geometry in a secondary document", () => {
+      const frame = document.createElement("iframe");
+      jasmine.attachToDOM(frame);
+      mainModule.setSharedScrollbarWidth(13);
+      const simplemap = new Simplemap(frame.contentDocument);
+
+      try {
+        const root = frame.contentDocument.documentElement;
+        expect(root.style.getPropertyValue("--scrollbar-width")).toBe("13px");
+        expect(root.style.getPropertyValue("--scrollbar-bottom")).toBe("13px");
+
+        mainModule.setSharedScrollbarWidth(7);
+        expect(root.style.getPropertyValue("--scrollbar-width")).toBe("7px");
+        expect(root.style.getPropertyValue("--scrollbar-bottom")).toBe("7px");
+      } finally {
+        simplemap.destroy();
+        frame.remove();
+      }
+    });
+
     it("renders markers on the canvas from percent-based items", () => {
       const container = document.createElement("div");
       container.style.cssText = "position: relative; width: 20px; height: 200px;";
