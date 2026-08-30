@@ -43,14 +43,14 @@
   "consumedServices": {
     "marker.registry": {
       "versions": {
-        "^2.0.0": "consumeMarkerRegistry"
+        "^1.0.0": "consumeMarkerRegistry"
       }
     }
   },
   "providedServices": {
     "scrollmap.widget": {
       "versions": {
-        "2.0.0": "provideScrollmapWidget"
+        "1.0.0": "provideScrollmapWidget"
       }
     }
   },

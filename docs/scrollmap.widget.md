@@ -4,7 +4,7 @@ The `Simplemap` class, so a package can draw scrollbar markers beside a pane tha
 
 |             |                                                         |
 | ----------- | ------------------------------------------------------- |
-| Version     | `2.0.0`                                                 |
+| Version     | `1.0.0`                                                 |
 | Provided by | `provideScrollmapWidget()` returning the class itself   |
 | Consumed by | `consumeScrollmapWidget(Simplemap)`                     |
 | Owner       | [`scrollmap`](https://github.com/lumine-code/scrollmap) |
@@ -19,19 +19,19 @@ In your `package.json`:
 {
   "consumedServices": {
     "scrollmap.widget": {
-      "versions": { "^2.0.0": "consumeScrollmapWidget" }
+      "versions": { "^1.0.0": "consumeScrollmapWidget" }
     }
   }
 }
 ```
 
-The service **is** the class, not an instance and not a factory. Construct it yourself, once per view that needs a scrollbar, with the `Document` that owns the view.
+The service **is** the class, not an instance and not a factory. Construct it yourself, once per view that needs a scrollbar.
 
 ## Contract
 
 ```ts
 class Simplemap {
-  constructor(document: Document);
+  constructor();
   element: HTMLElement;
   setItems(items: Item[]): void;
   update(): void;
@@ -71,7 +71,7 @@ const { Disposable } = require("lumine");
 
 module.exports = {
   consumeScrollmapWidget(Simplemap) {
-    this.simplemap = new Simplemap(this.container.ownerDocument);
+    this.simplemap = new Simplemap();
     this.container.appendChild(this.simplemap.element);
     this.simplemap.setItems([
       { prc: 10, cls: "marker-h1" },
@@ -99,4 +99,4 @@ Call `destroy()` when your view goes away, from the `Disposable` you return from
 
 ## Versioning
 
-`2.0.0` provided, `^2.0.0` consumed. A breaking change gets a new major version, and both sides move in the same release.
+`1.0.0` provided, `^1.0.0` consumed. A change that breaks this shape gets a new service name rather than a new major version, and both sides move in the same release.
