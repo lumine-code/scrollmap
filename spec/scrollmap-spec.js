@@ -121,11 +121,16 @@ describe("scrollmap", () => {
       expect(commands).toContain("scrollmap:show-layers");
     });
 
-    it("initializes the scrollbar CSS variables on the root element", async () => {
-      await activate();
+    it("initializes the scrollbar CSS variables in a root rule", async () => {
+      const mainModule = await activate();
       const root = document.documentElement;
-      expect(root.style.getPropertyValue("--scrollbar-width")).not.toBe("");
-      expect(root.style.getPropertyValue("--scrollbar-bottom")).not.toBe("");
+      const rule = mainModule.scrollbarGeometryRule;
+
+      expect(rule.selectorText).toBe(":root");
+      expect(rule.style.getPropertyValue("--scrollbar-width")).not.toBe("");
+      expect(rule.style.getPropertyValue("--scrollbar-bottom")).not.toBe("");
+      expect(root.style.getPropertyValue("--scrollbar-width")).toBe("");
+      expect(root.style.getPropertyValue("--scrollbar-bottom")).toBe("");
     });
   });
 
@@ -265,9 +270,7 @@ describe("scrollmap", () => {
 
       // And the strip may not fall back on a width some other editor happened
       // to publish: this editor's own component is the only source.
-      const root = document.documentElement;
-      root.style.setProperty("--scrollbar-width", "0");
-      root.style.setProperty("--scrollbar-bottom", "0");
+      mainModule.publishScrollbarGeometry(0, 0);
 
       markerMain.consumeMarkerLayer({
         name: "speclayer",
@@ -286,6 +289,8 @@ describe("scrollmap", () => {
     it("falls back to the overlay width when the scrollbar reserves no space", async () => {
       lumine.config.set("scrollmap.overlayWidth", 9);
       spyOn(editorElement.component, "getVerticalScrollbarWidth").and.returnValue(0);
+      spyOn(editorElement.component, "getHorizontalScrollbarHeight").and.returnValue(0);
+      mainModule.measureScrollbar(editor);
 
       markerMain.consumeMarkerLayer({
         name: "speclayer",
@@ -296,6 +301,20 @@ describe("scrollmap", () => {
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       await waitFor(() => canvasHasInk(canvas));
       expect(scrollmap.element.style.width).toBe("9px");
+      const style = mainModule.scrollbarGeometryRule.style;
+      expect(style.getPropertyValue("--scrollbar-width")).toBe("9px");
+      expect(style.getPropertyValue("--scrollbar-bottom")).toBe("0px");
+    });
+
+    it("measures the vertical width and horizontal height independently", () => {
+      spyOn(editorElement.component, "getVerticalScrollbarWidth").and.returnValue(11);
+      spyOn(editorElement.component, "getHorizontalScrollbarHeight").and.returnValue(7);
+
+      mainModule.measureScrollbar(editor);
+
+      const style = mainModule.scrollbarGeometryRule.style;
+      expect(style.getPropertyValue("--scrollbar-width")).toBe("11px");
+      expect(style.getPropertyValue("--scrollbar-bottom")).toBe("7px");
     });
 
     it("attaches a scrollmap element next to the editor scrollbar", () => {
