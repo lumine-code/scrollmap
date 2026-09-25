@@ -19,9 +19,6 @@
   "engines": {
     "lumine": "^1.0.0"
   },
-  "backgroundTips": [
-    "You can choose which marker layers the scrollbar shows with {{ 'scrollmap:show-layers' | keystroke }}"
-  ],
   "specPackages": [
     "marker"
   ],
@@ -40,17 +37,22 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
-  "consumedServices": {
-    "marker.registry": {
-      "versions": {
-        "^1.0.0": "consumeMarkerRegistry"
-      }
-    }
-  },
   "providedServices": {
     "scrollmap.widget": {
       "versions": {
         "1.0.0": "provideScrollmapWidget"
+      }
+    },
+    "background-tips.provider": {
+      "versions": {
+        "1.0.0": "provideBackgroundTips"
+      }
+    }
+  },
+  "consumedServices": {
+    "marker.registry": {
+      "versions": {
+        "^1.0.0": "consumeMarkerRegistry"
       }
     }
   },
