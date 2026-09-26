@@ -125,6 +125,37 @@ describe("scrollmap", () => {
       expect(commands).toContain("scrollmap:show-layers");
     });
 
+    it("defers picker and editor UI until after synchronous service wiring", async () => {
+      const mainModule = await activate();
+      mainModule.consumer.dispose();
+
+      const picker = {
+        destroy: jasmine.createSpy("destroy"),
+        show: jasmine.createSpy("show"),
+      };
+      const disposable = () => ({ dispose() {} });
+      const registry = {
+        createPicker: jasmine.createSpy("createPicker").and.returnValue(picker),
+        onDidChangeItems: jasmine.createSpy("onDidChangeItems").and.callFake(disposable),
+        onDidChangeLayers: jasmine.createSpy("onDidChangeLayers").and.callFake(disposable),
+      };
+      const observeTextEditors = spyOn(lumine.workspace, "observeTextEditors").and.returnValue(
+        disposable(),
+      );
+
+      const consumer = mainModule.consumeMarkerRegistry(registry);
+
+      expect(registry.createPicker).not.toHaveBeenCalled();
+      expect(observeTextEditors).not.toHaveBeenCalled();
+
+      await null;
+      expect(registry.createPicker).toHaveBeenCalled();
+      expect(observeTextEditors).toHaveBeenCalled();
+
+      consumer.dispose();
+      expect(picker.destroy).toHaveBeenCalled();
+    });
+
     it("initializes the scrollbar CSS variables in a root rule", async () => {
       const mainModule = await activate();
       const root = document.documentElement;
