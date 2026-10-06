@@ -579,8 +579,8 @@ describe("scrollmap", () => {
         expect(markerColor(canvas)).toBe("rgba(0, 128, 255, 255)");
 
         // `updateAppearance` mutates the document from inside the cross-fade and
-        // announces it with `onDidChangeActiveThemes`. No stylesheet lands, so
-        // that event is the only signal this path gives.
+        // announces the resulting variable-cascade change. The variable event
+        // covers this path even though no stylesheet lands.
         await lumine.themes.updateAppearance(() => {
           specStyle.textContent = ".marker.marker-speclayer { background-color: rgb(0, 200, 0); }";
         });

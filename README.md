@@ -44,7 +44,7 @@ The style can be adjusted according to user preferences in the `styles.css` file
 }
 
 .scrollmap .marker-mylayer {
-  background-color: var(--accent-color);
+  background-color: var(--accent-indicator-color);
 }
 ```
 
