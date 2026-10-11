@@ -25,9 +25,7 @@
   "main": "./lib/main",
   "files": [
     "docs",
-    "keymaps",
     "lib",
-    "menus",
     "spec",
     "styles"
   ],
@@ -65,15 +63,6 @@
     "prettier": "^3.9.9"
   },
   "configSchema": {
-    "disabledLayers": {
-      "title": "Disabled Layers",
-      "description": "List of disabled layer names",
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "default": []
-    },
     "overlayWidth": {
       "title": "Overlay Width",
       "description": "Width of the strip, in pixels, on platforms whose scrollbars float over the content and reserve no space of their own — macOS, and Linux with overlay scrollbars. Where the scrollbar does reserve space the strip matches it and this is unused.",

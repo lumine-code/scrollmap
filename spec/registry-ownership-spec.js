@@ -1,5 +1,3 @@
-const path = require("path");
-
 describe("scrollmap marker registry ownership", () => {
   let mainModule, markerPackage, editor, editorElement, providers, registries;
 
@@ -10,14 +8,12 @@ describe("scrollmap marker registry ownership", () => {
   function createRegistry() {
     const markerMain = markerPackage.mainModule;
     const registry = new markerMain.registry.constructor();
-    const { LayerPicker } = require(path.join(markerPackage.path, "lib/picker"));
     const service = {
       ...markerMain.provideMarkerRegistry(),
       attach: (target) => registry.attach(target),
       providers: () => [...registry.providers.values()],
       onDidChangeItems: (callback) => registry.onDidChangeItems(callback),
       onDidChangeLayers: (callback) => registry.onDidChangeLayers(callback),
-      createPicker: (options) => new LayerPicker({ registry, ...options }),
     };
     registries.push(registry);
     return { registry, service };
@@ -54,28 +50,21 @@ describe("scrollmap marker registry ownership", () => {
     for (const registry of registries) registry.destroy();
   });
 
-  it("retains a newer strip and picker when the previous registry provider retires", async () => {
+  it("retains a newer strip when the previous registry provider retires", async () => {
     const older = createRegistry();
     const oldProvider = await provide(older.service);
     const oldStrip = mainModule.scrollmapForEditor(editor);
-    const oldPicker = mainModule.picker;
-    spyOn(oldPicker, "destroy").and.callThrough();
     const newer = createRegistry();
     await provide(newer.service);
     const currentStrip = mainModule.scrollmapForEditor(editor);
-    const currentPicker = mainModule.picker;
     expect(currentStrip).not.toBe(oldStrip);
-    expect(currentPicker).not.toBe(oldPicker);
-    spyOn(currentPicker, "destroy").and.callThrough();
 
     oldProvider.dispose();
 
     expect(oldStrip.destroyed).toBe(true);
-    expect(oldPicker.destroy).toHaveBeenCalledTimes(1);
     expect(mainModule.scrollmapForEditor(editor)).toBe(currentStrip);
     expect(currentStrip.destroyed).toBe(false);
     expect(editorElement.contains(currentStrip.element)).toBe(true);
-    expect(currentPicker.destroy).not.toHaveBeenCalled();
     expect(older.registry.sets.has(editor)).toBe(false);
     expect(newer.registry.sets.get(editor).refs).toBe(1);
   });
@@ -85,10 +74,8 @@ describe("scrollmap marker registry ownership", () => {
     const externalHandle = service.attach(editor);
     const first = await provide(service);
     const strip = mainModule.scrollmapForEditor(editor);
-    const picker = mainModule.picker;
     const second = await provide(service);
     expect(mainModule.scrollmapForEditor(editor)).toBe(strip);
-    expect(mainModule.picker).toBe(picker);
     expect(registry.sets.get(editor).refs).toBe(2);
     first.dispose();
     expect(strip.destroyed).toBe(false);
@@ -141,7 +128,6 @@ describe("scrollmap marker registry ownership", () => {
     const older = createRegistry();
     await provide(older.service);
     const oldStrip = mainModule.scrollmapForEditor(editor);
-    const oldPicker = mainModule.picker;
     const newer = createRegistry();
     const newestProvider = await provide(newer.service);
     const latestStrip = mainModule.scrollmapForEditor(editor);
@@ -149,7 +135,7 @@ describe("scrollmap marker registry ownership", () => {
     expect(latestStrip.destroyed).toBe(true);
     expect(mainModule.scrollmapForEditor(editor)).toBe(oldStrip);
     expect(oldStrip.destroyed).toBe(false);
-    expect(mainModule.picker).toBe(oldPicker);
+    expect(mainModule.registry).toBe(older.service);
     expect(older.registry.sets.get(editor).refs).toBe(1);
   });
 

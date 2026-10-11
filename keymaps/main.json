@@ -1,7 +1,0 @@
-{
-  // `alt-m` reveals the layer picker. Bare alt-<letter> is the tier for
-  // revealing a surface, one letter per surface.
-  "lumine-workspace": {
-    "alt-m": "scrollmap:show-layers"
-  }
-}

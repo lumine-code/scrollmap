@@ -116,26 +116,20 @@ describe("scrollmap", () => {
   });
 
   describe("activation", () => {
-    it("activates and registers the layer picker command", async () => {
+    it("activates as a renderer of the marker hub's layers", async () => {
       await activate();
       expect(lumine.packages.isPackageActive("scrollmap")).toBe(true);
-      const commands = lumine.commands
-        .findCommands({ target: workspaceElement })
-        .map((command) => command.name);
-      expect(commands).toContain("scrollmap:show-layers");
+      const editor = await lumine.workspace.open();
+      await waitFor(() => editor.getElement().querySelector(".scrollmap"));
+      expect(markerMain.registry.sets.get(editor).refs).toBe(1);
     });
 
-    it("defers picker and editor UI until after synchronous service wiring", async () => {
+    it("defers editor UI until after synchronous service wiring", async () => {
       const mainModule = await activate();
       mainModule.consumer.dispose();
 
-      const picker = {
-        destroy: jasmine.createSpy("destroy"),
-        show: jasmine.createSpy("show"),
-      };
       const disposable = () => ({ dispose() {} });
       const registry = {
-        createPicker: jasmine.createSpy("createPicker").and.returnValue(picker),
         onDidChangeItems: jasmine.createSpy("onDidChangeItems").and.callFake(disposable),
         onDidChangeLayers: jasmine.createSpy("onDidChangeLayers").and.callFake(disposable),
       };
@@ -145,15 +139,15 @@ describe("scrollmap", () => {
 
       const consumer = mainModule.consumeMarkerRegistry(registry);
 
-      expect(registry.createPicker).not.toHaveBeenCalled();
+      expect(registry.onDidChangeItems).not.toHaveBeenCalled();
       expect(observeTextEditors).not.toHaveBeenCalled();
 
       await null;
-      expect(registry.createPicker).toHaveBeenCalled();
+      expect(registry.onDidChangeItems).toHaveBeenCalled();
       expect(observeTextEditors).toHaveBeenCalled();
 
       consumer.dispose();
-      expect(picker.destroy).toHaveBeenCalled();
+      expect(mainModule.registry).toBeNull();
     });
 
     it("initializes the scrollbar CSS variables in a root rule", async () => {
@@ -531,20 +525,35 @@ describe("scrollmap", () => {
       expect(regions[1].className).toBe("marker marker-speclayer full extra");
     });
 
-    it("skips layers listed in the disabledLayers setting", async () => {
+    it("clears globally disabled layers and refreshes them when enabled", async () => {
+      let row = 0;
+      const getItems = jasmine.createSpy("getItems").and.callFake(() => [{ row }]);
       markerMain.consumeMarkerLayer({
         name: "speclayer",
-        getItems: () => [{ row: 0 }],
+        getItems,
       });
-      lumine.config.set("scrollmap.disabledLayers", ["speclayer"]);
-
       advanceClock(30);
       await waitFor(() => scrollmap.handle.layerFor("speclayer").items.length === 1);
-
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
-      // Draw once more with the layer disabled and verify nothing is painted.
       scrollmap.drawMarkers();
+      expect(canvasHasInk(canvas)).toBe(true);
+
+      lumine.config.set("marker.disabledLayers", ["speclayer"]);
+      scrollmap.drawMarkers();
+      expect(scrollmap.handle.layerFor("speclayer")).toBeUndefined();
       expect(canvasHasInk(canvas)).toBe(false);
+      const computes = getItems.calls.count();
+      row = 5;
+      editor.setCursorBufferPosition([1, 0]);
+      advanceClock(30);
+      expect(getItems.calls.count()).toBe(computes);
+
+      lumine.config.set("marker.disabledLayers", []);
+      advanceClock(30);
+      await waitFor(() => scrollmap.handle.layerFor("speclayer")?.items[0]?.row === 5);
+      scrollmap.drawMarkers();
+      expect(canvasHasInk(canvas)).toBe(true);
+      expect(getItems.calls.count()).toBeGreaterThan(computes);
     });
 
     describe("when the window is restyled", () => {
@@ -602,45 +611,6 @@ describe("scrollmap", () => {
         expect(scrollmap.drawMarkers).not.toHaveBeenCalled();
         expect(markerColor(canvas)).toBe("rgba(0, 128, 255, 255)");
       });
-    });
-  });
-
-  describe("scrollmap:show-layers", () => {
-    it("opens the layer picker listing registered providers", async () => {
-      await activate();
-      markerMain.consumeMarkerLayer({
-        name: "speclayer",
-        description: "Spec layer",
-        getItems: () => [],
-      });
-
-      lumine.commands.dispatch(workspaceElement, "scrollmap:show-layers");
-      const view = await waitFor(() => document.querySelector(".scrollmap-view"));
-      await waitFor(() => view.textContent.includes("speclayer"));
-
-      lumine.commands.dispatch(workspaceElement, "scrollmap:show-layers");
-    });
-
-    it("says why it declined when the marker hub was never consumed", async () => {
-      const mainModule = await activate();
-      // Everything that draws lives under the hub consumer, so without it there
-      // is no picker. A silent no-op leaves no way to tell an empty list from a
-      // missing package.
-      mainModule.picker = null;
-
-      lumine.commands.dispatch(workspaceElement, "scrollmap:show-layers");
-
-      const [warning] = lumine.notifications.getNotifications();
-      expect(warning.getType()).toBe("warning");
-      expect(warning.getMessage()).toContain("marker package");
-    });
-
-    it("toggles layers in and out of the disabledLayers setting", async () => {
-      const mainModule = await activate();
-      mainModule.picker.toggle({ name: "speclayer" });
-      expect(lumine.config.get("scrollmap.disabledLayers")).toContain("speclayer");
-      mainModule.picker.toggle({ name: "speclayer" });
-      expect(lumine.config.get("scrollmap.disabledLayers")).not.toContain("speclayer");
     });
   });
 });
