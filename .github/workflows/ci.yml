@@ -40,16 +40,33 @@ jobs:
         run: npm run lint
       - name: Check formatting
         run: npm run format:check
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+      - name: Check package contents
+        run: npm pack --dry-run
 
   integration:
     # Run the Jasmine spec suite inside a real Lumine build; the specs exercise
-    # the editor runtime (text editors, modal panels, and command dispatch) and
-    # activate the marker hub the strip draws from, provisioned as a spec package.
-    name: Lumine integration specs
-    runs-on: ubuntu-latest
+    # the editor runtime (text editors, modal panels, and command dispatch).
+    name: Lumine integration specs on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
     env:
       LUMINE_JASMINE_REPORTER: list
+      LUMINE_DISABLE_SHELLING_OUT_FOR_ENVIRONMENT: "true"
+      LUMINE_HOME: ${{ github.workspace }}/scrollmap-home
+      HOME: ${{ github.workspace }}/scrollmap-home
+      USERPROFILE: ${{ github.workspace }}/scrollmap-home
+      TEMP: ${{ github.workspace }}/scrollmap-temp
+      TMP: ${{ github.workspace }}/scrollmap-temp
+      TMPDIR: ${{ github.workspace }}/scrollmap-temp
     steps:
       - uses: actions/checkout@v7
         with:
@@ -63,7 +80,10 @@ jobs:
           node-version-file: lumine/.nvmrc
           cache: npm
           cache-dependency-path: lumine/package-lock.json
+      - name: Create private runtime directories
+        run: mkdir -p "$LUMINE_HOME/electronUserData" "$TEMP"
       - name: Install Linux build and headless-display dependencies
+        if: runner.os == 'Linux'
         run: |
           # A third-party repository on the runner image answering 403 must not
           # fail the job: the lists this actually needs still fetched, and the
@@ -88,13 +108,15 @@ jobs:
       - name: Rebuild native modules for Electron
         working-directory: lumine
         run: npm run build
-      # Some specs activate packages the editor no longer bundles; the manifest
-      # names them in `specPackages` and this clones them into a scratch
-      # LUMINE_HOME, exporting it (and LUMINE_TEST_PACKAGES) for the spec step.
       - name: Install spec dependency packages
         working-directory: lumine
-        run: node script/install-spec-packages.js --package ../scrollmap --home "$RUNNER_TEMP/lumine-home" --github-env "$GITHUB_ENV"
+        run: node script/install-spec-packages.js --package ../scrollmap --home "$LUMINE_HOME" --github-env "$GITHUB_ENV"
       - name: Run the Jasmine spec suite
         working-directory: lumine
         timeout-minutes: 20
-        run: xvfb-run --auto-servernum npm start -- --test ../scrollmap/spec
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run --auto-servernum npm start -- --test ../scrollmap/spec
+          else
+            npm start -- --test ../scrollmap/spec
+          fi
