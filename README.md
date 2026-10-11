@@ -7,6 +7,7 @@ A strip beside every editor scrollbar drawing the layers the `marker` package co
 ## Features
 
 - **Layer system**: marker layers enabled in the `marker` hub are drawn beside the scrollbar, computed once and shared with the minimap.
+- **Visibility**: show or hide editor scrollbar markers while preserving the shared layers and their state.
 - **Column layout**: markers positioned in the left, center, or right column, or spanning the full width.
 - **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux, and floats at its own width where scrollbars overlay the content.
 - **Simplemap API**: support for non-editor panes like the PDF view.
@@ -14,6 +15,12 @@ A strip beside every editor scrollbar drawing the layers the `marker` package co
 ## Installation
 
 To install `scrollmap` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/scrollmap`.
+
+## Commands
+
+Commands available in `lumine-workspace`:
+
+- `scrollmap:toggle`: show or hide the marker strips on editor scrollbars.
 
 ## Customization
 

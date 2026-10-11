@@ -163,6 +163,86 @@ describe("scrollmap", () => {
     });
   });
 
+  describe("scrollmap:toggle", () => {
+    let mainModule, editor, strip;
+
+    beforeEach(async () => {
+      mainModule = await activate();
+      editor = await lumine.workspace.open();
+      editor.setText(Array(40).fill("scrollmap toggle").join("\n"));
+      strip = await waitFor(() => mainModule.scrollmapForEditor(editor));
+    });
+
+    const toggle = () => lumine.commands.dispatch(workspaceElement, "scrollmap:toggle");
+
+    it("hides and shows the strip while retaining its shared layer and handle", async () => {
+      const getItems = jasmine.createSpy("getItems").and.returnValue([{ row: 0, end: 39 }]);
+      markerMain.consumeMarkerLayer({ name: "speclayer", getItems });
+      advanceClock(30);
+      const layer = strip.handle.layerFor("speclayer");
+      layer.cache.set("retained", true);
+      const refs = markerMain.registry.sets.get(editor).refs;
+      const computes = getItems.calls.count();
+
+      toggle();
+      expect(strip.element.hidden).toBe(true);
+      expect(getComputedStyle(strip.element).display).toBe("none");
+      expect(strip.destroyed).toBe(false);
+      expect(strip.handle.layerFor("speclayer")).toBe(layer);
+      expect(markerMain.registry.sets.get(editor).refs).toBe(refs);
+      expect(markerMain.registry.isEnabled("speclayer")).toBe(true);
+
+      toggle();
+      await waitFor(() => canvasHasInk(strip.canvas.canvas));
+      expect(strip.element.hidden).toBe(false);
+      expect(strip.handle.layerFor("speclayer")).toBe(layer);
+      expect(layer.cache.get("retained")).toBe(true);
+      expect(getItems.calls.count()).toBe(computes);
+    });
+
+    it("cancels pending repaint and draws fresh items and styles when shown", async () => {
+      let rows = [{ row: 0, end: 39 }];
+      const getItems = jasmine.createSpy("getItems").and.callFake(() => rows);
+      markerMain.consumeMarkerLayer({ name: "speclayer", getItems });
+      advanceClock(30);
+      await waitFor(() => canvasHasInk(strip.canvas.canvas));
+      const draw = spyOn(strip.canvas, "draw").and.callThrough();
+      strip.updateView();
+      expect(strip.rafId).not.toBeNull();
+      toggle();
+      expect(strip.rafId).toBeNull();
+      rows = [{ row: 0, end: 38 }];
+      strip.handle.layerFor("speclayer").updateSync();
+      restyle(".scrollmap .marker.marker-speclayer { background-color: rgb(0, 255, 0); }");
+      strip.updateTheme();
+      strip.drawMarkers();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      expect(draw).not.toHaveBeenCalled();
+      const computes = getItems.calls.count();
+
+      toggle();
+      await waitFor(() => draw.calls.count() > 0);
+      expect(strip.handle.layerFor("speclayer").items).toEqual(rows);
+      expect(markerColor(strip.canvas.canvas)).toBe("rgba(0, 255, 0, 255)");
+      expect(getItems.calls.count()).toBe(computes);
+    });
+
+    it("applies hidden state to newly opened editors without hiding custom widgets", async () => {
+      const widget = new (mainModule.provideScrollmapWidget())();
+      workspaceElement.appendChild(widget.element);
+      toggle();
+      const otherEditor = await lumine.workspace.open();
+      const otherStrip = await waitFor(() => mainModule.scrollmapForEditor(otherEditor));
+      expect(otherStrip.element.hidden).toBe(true);
+      expect(widget.element.hidden).toBe(false);
+      toggle();
+      expect(strip.element.hidden).toBe(false);
+      expect(otherStrip.element.hidden).toBe(false);
+      expect(widget.element.hidden).toBe(false);
+      widget.destroy();
+    });
+  });
+
   describe("scrollmap.widget service", () => {
     let Simplemap, mainModule;
 

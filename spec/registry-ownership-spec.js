@@ -69,6 +69,19 @@ describe("scrollmap marker registry ownership", () => {
     expect(newer.registry.sets.get(editor).refs).toBe(1);
   });
 
+  it("preserves hidden visibility when a registry disappears and reconnects", async () => {
+    const older = createRegistry();
+    const first = await provide(older.service);
+    lumine.commands.dispatch(lumine.views.getView(lumine.workspace), "scrollmap:toggle");
+    expect(mainModule.scrollmapForEditor(editor).element.hidden).toBe(true);
+    first.dispose();
+    const newer = createRegistry();
+    await provide(newer.service);
+    expect(mainModule.scrollmapForEditor(editor).element.hidden).toBe(true);
+    lumine.commands.dispatch(lumine.views.getView(lumine.workspace), "scrollmap:toggle");
+    expect(mainModule.scrollmapForEditor(editor).element.hidden).toBe(false);
+  });
+
   it("shares a registry's strip and refcount until its last service edge disappears", async () => {
     const { registry, service } = createRegistry();
     const externalHandle = service.attach(editor);

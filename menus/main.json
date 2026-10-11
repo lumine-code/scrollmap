@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Scrollmap",
+          "submenu": [{ "label": "Toggle", "command": "scrollmap:toggle" }]
+        }
+      ]
+    }
+  ]
+}
