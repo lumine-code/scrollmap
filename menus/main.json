@@ -8,7 +8,9 @@
           "submenu": [
             {
               "label": "Scrollmap",
-              "command": "scrollmap:toggle"
+              "command": "scrollmap:toggle",
+              "group": "structure",
+              "order": 30
             }
           ]
         }
