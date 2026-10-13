@@ -1,0 +1,17 @@
+{
+  "title": "scrollmap",
+  "description": "Locate document sections on the scrollbar while navigating a long file.",
+  "recordedOn": "2026-10-13",
+  "sourceRevision": "a82834e55623785eb9c75987fe2c6031f0af1db0",
+  "mode": "normal",
+  "fontSettings": "default",
+  "themeSourceRevision": "6564a9e21899b5541e9c8f8006f9be6d6d72e6ad",
+  "images": [
+    {
+      "file": "demo.png",
+      "label": "Locate document sections on the scrollbar while navigating a long file.",
+      "width": 1100,
+      "height": 730
+    }
+  ]
+}

@@ -12,6 +12,8 @@ A strip beside every editor scrollbar drawing the layers the `marker` package co
 - **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux, and floats at its own width where scrollbars overlay the content.
 - **Simplemap API**: support for non-editor panes like the PDF view.
 
+![Locate document sections on the scrollbar while navigating a long file.](.github/demo.png)
+
 ## Installation
 
 To install `scrollmap` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/scrollmap`.
