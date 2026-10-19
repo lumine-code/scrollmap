@@ -50,7 +50,7 @@ type Item = {
 | Member            | Description                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------------------- |
 | `element`         | The widget's root element. Append it to your own container; the widget never places itself. |
-| `setItems(items)` | Replaces the marker set and repaints.                                                       |
+| `setItems(items)` | Replaces markers and paints changed data or geometry; identical pixels skip the redraw.     |
 | `update()`        | Repaints the current items, for when the container has been resized.                        |
 | `destroy()`       | Drops the theme subscriptions and removes `element` from the DOM.                           |
 
@@ -89,7 +89,7 @@ module.exports = {
 
 Markers are drawn on a canvas, but their appearance still comes from CSS: the widget resolves `.marker` rules through a hidden style-resolver element — the same canvas machinery the `marker` package supplies to every overview map — so the rules that style editor layers style these too. Without the `marker` package installed the widget degrades to an empty strip.
 
-The widget subscribes to theme and stylesheet changes and repaints itself when the marker styles actually change, so a theme switch needs no work from the consumer. A container **resize** is not observed — call `update()` when your view changes size.
+The widget subscribes to theme and stylesheet changes and repaints itself when the marker styles actually change, so a theme switch needs no work from the consumer. `setItems()` also measures the current dimensions and display scale, so a view publishing fresh items after a resize needs no separate `update()` call. A container **resize** is not observed — call `update()` when your view changes size without publishing items. Repeated identical item sets skip canvas work, including when a viewport event changes only the scroll position.
 
 Nothing is drawn while the container measures zero in either dimension, so appending `element` to a hidden container and setting items is safe; call `update()` once it becomes visible.
 

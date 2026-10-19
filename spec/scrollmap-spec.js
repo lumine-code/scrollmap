@@ -251,6 +251,41 @@ describe("scrollmap", () => {
       Simplemap = mainModule.provideScrollmapWidget();
     });
 
+    it("skips identical widget frames and follows mutable items and resized geometry", () => {
+      const widget = new Simplemap();
+      widget.element.style.cssText = "width: 20px; height: 200px;";
+      workspaceElement.appendChild(widget.element);
+      const item = { prc: 10, cls: "spec-plain" };
+      const draw = spyOn(widget.canvas, "draw").and.callThrough();
+      try {
+        widget.setItems([item]);
+        widget.setItems([{ ...item }]);
+        expect(draw).toHaveBeenCalledTimes(1);
+        item.prc = 30;
+        widget.setItems([item]);
+        expect(draw).toHaveBeenCalledTimes(2);
+        widget.element.style.height = "300px";
+        widget.setItems([item]);
+        expect(draw).toHaveBeenCalledTimes(3);
+        expect(draw.calls.mostRecent().args[2]).toBe(300);
+      } finally {
+        widget.destroy();
+      }
+    });
+
+    it("makes retired widgets inert", () => {
+      const widget = new Simplemap();
+      widget.element.style.cssText = "width: 20px; height: 200px;";
+      workspaceElement.appendChild(widget.element);
+      const draw = spyOn(widget.canvas, "draw").and.callThrough();
+      widget.destroy();
+      widget.setItems([{ prc: 10, cls: "spec-plain" }]);
+      widget.update();
+      widget.updateTheme();
+      widget.drawMarkers();
+      expect(draw).not.toHaveBeenCalled();
+    });
+
     it("provides an instantiable class exposing element, setItems and destroy", () => {
       const simplemap = new Simplemap();
       expect(simplemap.element instanceof HTMLElement).toBe(true);
