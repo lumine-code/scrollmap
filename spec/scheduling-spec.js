@@ -68,6 +68,38 @@ describe("scrollmap frame scheduling", () => {
     expect(strip.pendingUpdate).toBeNull();
   });
 
+  it("tracks continuous Enter edits without provider or decoration updates", () => {
+    const { Disposable } = require("lumine");
+    for (const method of [
+      "onDidAddDecoration",
+      "onDidRemoveDecoration",
+      "onDidUpdateDecorations",
+    ]) {
+      spyOn(editor, method).and.callFake(() => new Disposable());
+    }
+    const isolated = new strip.constructor(editor, marker.provideMarkerRegistry(), { scale: 1 });
+    strip.element.parentNode.appendChild(isolated.element);
+    try {
+      isolated.handle.updateSync();
+      isolated.drawMarkers();
+      const items = layer.items;
+      const stopped = jasmine.createSpy("stopped changing");
+      const stopSubscription = editor.onDidStopChanging(stopped);
+      const draw = spyOn(isolated.canvas, "draw").and.callThrough();
+      editor.setCursorBufferPosition([50, 0]);
+      for (let index = 0; index < 5; index++) {
+        editor.insertNewline();
+        frame();
+        expect(draw).toHaveBeenCalledTimes(index + 1);
+        expect(layer.items).toBe(items);
+      }
+      expect(stopped).not.toHaveBeenCalled();
+      stopSubscription.dispose();
+    } finally {
+      isolated.destroy();
+    }
+  });
+
   it("waits for late editor measurements before projecting scrollbar geometry", () => {
     const draw = spyOn(strip.canvas, "draw").and.callThrough();
     let clientHeight = 300;
