@@ -88,6 +88,16 @@ describe("Scrollmap overlay-width changes", () => {
 
     expect(map.element.style.width).toBe("15px");
     expect(map.canvas.canvas.width).toBeGreaterThan(before);
+    // The bitmap and its CSS-resolved marker must both use the new width.
+    const context = map.canvas.canvas.getContext("2d");
+    const expandedArea = context.getImageData(
+      Math.floor((map.canvas.canvas.width * 2) / 3),
+      Math.floor(map.canvas.canvas.height / 2),
+      1,
+      1,
+    ).data;
+    expect(expandedArea[0]).toBe(255);
+    expect(expandedArea[3]).toBe(255);
     expect(main.scrollbarGeometryRule.style.getPropertyValue("--scrollbar-width")).toBe("15px");
     expect(widget.element.clientWidth).toBe(15);
   });
