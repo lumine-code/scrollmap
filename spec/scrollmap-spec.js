@@ -178,7 +178,7 @@ describe("scrollmap", () => {
     it("hides and shows the strip while retaining its shared layer and handle", async () => {
       const getItems = jasmine.createSpy("getItems").and.returnValue([{ row: 0, end: 39 }]);
       markerMain.consumeMarkerLayer({ name: "speclayer", getItems });
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
       const layer = strip.handle.layerFor("speclayer");
       layer.cache.set("retained", true);
       const refs = markerMain.registry.sets.get(editor).refs;
@@ -204,13 +204,13 @@ describe("scrollmap", () => {
       let rows = [{ row: 0, end: 39 }];
       const getItems = jasmine.createSpy("getItems").and.callFake(() => rows);
       markerMain.consumeMarkerLayer({ name: "speclayer", getItems });
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
       await waitFor(() => canvasHasInk(strip.canvas.canvas));
       const draw = spyOn(strip.canvas, "draw").and.callThrough();
       strip.updateView();
-      expect(strip.rafId).not.toBeNull();
+      expect(strip.pendingUpdate).not.toBeNull();
       toggle();
-      expect(strip.rafId).toBeNull();
+      expect(strip.pendingUpdate).toBeNull();
       rows = [{ row: 0, end: 38 }];
       strip.handle.layerFor("speclayer").updateSync();
       restyle(".scrollmap .marker.marker-speclayer { background-color: rgb(0, 255, 0); }");
@@ -385,7 +385,7 @@ describe("scrollmap", () => {
         name: "speclayer",
         getItems: () => [{ row: 0 }],
       });
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
 
       const canvas = shortMap.element.querySelector("canvas.scrollmap-canvas");
       await waitFor(() => canvasHasInk(canvas));
@@ -405,7 +405,7 @@ describe("scrollmap", () => {
         name: "speclayer",
         getItems: () => [{ row: 0, end: 99 }],
       });
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
 
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       await waitFor(() => canvasHasInk(canvas));
@@ -442,7 +442,7 @@ describe("scrollmap", () => {
       const layer = scrollmap.handle.layerFor("speclayer");
       expect(layer).toBeDefined();
 
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
       expect(layer.items.length).toBe(2);
 
       const regions = [];
@@ -474,7 +474,7 @@ describe("scrollmap", () => {
         ],
       });
 
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
 
       const layer = scrollmap.handle.layerFor("speclayer");
       const items = layer.items.map(({ row, end, cls }) => ({ row, end, cls }));
@@ -491,9 +491,8 @@ describe("scrollmap", () => {
     it("skips the repaint when nothing it draws changed", () => {
       let rows = [{ row: 1 }, { row: 5 }];
       markerMain.consumeMarkerLayer({ name: "speclayer", getItems: () => rows });
-      advanceClock(30);
-
       spyOn(scrollmap.canvas, "draw").and.callThrough();
+      lumine.views.performDocumentUpdate();
       scrollmap.drawMarkers();
       expect(scrollmap.canvas.draw.calls.count()).toBe(1);
 
@@ -527,7 +526,7 @@ describe("scrollmap", () => {
         getItems,
       });
 
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
 
       const layer = scrollmap.handle.layerFor("speclayer");
       expect(layer.items.length).toBe(3);
@@ -562,7 +561,7 @@ describe("scrollmap", () => {
         getItems: () => items,
       });
 
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
 
       expect(scrollmap.handle.layerFor("speclayer").items.length).toBe(2);
       expect(items).toEqual([{ row: 0 }, { row: 5, end: 8 }]);
@@ -597,7 +596,7 @@ describe("scrollmap", () => {
         getItems: () => [{ row: 0 }, { row: 5, end: 8, position: "full", cls: "extra" }],
       });
 
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
 
       const regions = [];
       scrollmap.regionsFor(scrollmap.handle.layerFor("speclayer"), 1, 1, regions);
@@ -612,7 +611,7 @@ describe("scrollmap", () => {
         name: "speclayer",
         getItems,
       });
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
       await waitFor(() => scrollmap.handle.layerFor("speclayer").items.length === 1);
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       scrollmap.drawMarkers();
@@ -625,11 +624,11 @@ describe("scrollmap", () => {
       const computes = getItems.calls.count();
       row = 5;
       editor.setCursorBufferPosition([1, 0]);
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
       expect(getItems.calls.count()).toBe(computes);
 
       lumine.config.set("marker.disabledLayers", []);
-      advanceClock(30);
+      lumine.views.performDocumentUpdate();
       await waitFor(() => scrollmap.handle.layerFor("speclayer")?.items[0]?.row === 5);
       scrollmap.drawMarkers();
       expect(canvasHasInk(canvas)).toBe(true);
@@ -644,7 +643,7 @@ describe("scrollmap", () => {
           name: "speclayer",
           getItems: () => [{ row: 0, end: 99 }],
         });
-        advanceClock(30);
+        lumine.views.performDocumentUpdate();
         canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
         await waitFor(() => canvasHasInk(canvas));
       });

@@ -20,8 +20,8 @@ describe("scrollbar maps in editor windows", () => {
     expect(main.scrollmapForEditor(editor)).toBe(strip);
     expect(strip.element.ownerDocument).toBe(extra.getDocument());
     expect(strip.domWindow).toBe(extra.getDocument().defaultView);
-    await conditionPromise(() => !strip.rafId);
-    const frame = spyOn(extra.getDocument().defaultView, "requestAnimationFrame").and.callThrough();
+    await conditionPromise(() => !strip.pendingUpdate);
+    const frame = spyOn(lumine.views, "readDocument").and.callThrough();
     strip.updateView();
     expect(frame).toHaveBeenCalled();
     await lumine.workspace.attachWindow(extra);
