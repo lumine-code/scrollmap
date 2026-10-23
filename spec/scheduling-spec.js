@@ -134,3 +134,50 @@ describe("scrollmap frame scheduling", () => {
     expect(draw).not.toHaveBeenCalled();
   });
 });
+
+describe("scrollmap initial frame scheduling", () => {
+  it("computes attached layers before the first shared document paint", async () => {
+    const workspace = lumine.workspace.getElement();
+    workspace.style.width = "800px";
+    workspace.style.height = "600px";
+    jasmine.attachToDOM(workspace);
+    lumine.config.set("marker.cursors.enabled", false);
+    const marker = (await lumine.packages.activatePackage("marker")).mainModule;
+    const main = (await lumine.packages.activatePackage("scrollmap")).mainModule;
+    main.consumer.dispose();
+    const editor = await lumine.workspace.open();
+    editor.setText("first shared frame\n".repeat(100));
+    lumine.views.performDocumentUpdate();
+
+    const frames = [];
+    spyOn(window, "requestAnimationFrame").and.callFake((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    const getItems = jasmine.createSpy("initial items").and.returnValue([{ row: 12 }]);
+    const provider = marker.consumeMarkerLayer({ name: "initial-frame", getItems });
+    const service = marker.provideMarkerRegistry();
+    const draw = spyOn(service.MarkerCanvas.prototype, "draw").and.callThrough();
+    const consumer = main.consumeMarkerRegistry(service);
+    try {
+      await flushMicrotasks();
+      const strip = main.scrollmapForEditor(editor);
+      expect(strip).toBeDefined();
+      expect(getItems).not.toHaveBeenCalled();
+
+      lumine.views.performDocumentUpdate();
+
+      expect(frames.length).toBeGreaterThan(0);
+      expect(getItems).toHaveBeenCalledTimes(1);
+      expect(strip.handle.layerFor("initial-frame").items).toEqual([{ row: 12 }]);
+      const paint = draw.calls.all().findLast((call) => call.object === strip.canvas);
+      expect(paint?.args[0].map((region) => region.className)).toContain(
+        "marker marker-initial-frame",
+      );
+      expect(strip.pendingUpdate).toBeNull();
+    } finally {
+      consumer.dispose();
+      provider.dispose();
+    }
+  });
+});
