@@ -13,39 +13,36 @@ describe("scrollmap block decoration geometry", () => {
     }
   }
 
-  function waitFor(condition) {
+  function nextDocumentUpdate() {
+    const update = lumine.views.getNextUpdatePromise();
+    lumine.views.updateDocument(() => {});
+    return update;
+  }
+
+  async function waitFor(condition) {
     const spec = activeSpec;
     const started = performance.now();
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      const check = () => {
-        try {
-          requireActive(spec);
-          const result = condition();
-          if (result) {
-            resolve(result);
-          } else {
-            const elapsed = performance.now() - started;
-            if (++attempts >= 120 || elapsed >= 2000) {
-              reject(
-                new Error(
-                  `Block geometry was not ready after ${Math.round(elapsed)} ms (${attempts} frames)`,
-                ),
-              );
-            } else requestAnimationFrame(check);
-          }
-        } catch (error) {
-          reject(error);
-        }
-      };
-      check();
-    });
+    let attempts = 0;
+    while (true) {
+      requireActive(spec);
+      const result = condition();
+      if (result) return result;
+      const elapsed = performance.now() - started;
+      if (++attempts >= 120 || elapsed >= 2000) {
+        throw new Error(
+          `Block geometry was not ready after ${Math.round(elapsed)} ms (${attempts} document updates)`,
+        );
+      }
+      // A compositor callback can precede the editor's measurements and the
+      // strip's post-read paint. Observe the completed shared update instead.
+      await nextDocumentUpdate();
+    }
   }
 
   async function settle() {
     const spec = activeSpec;
     for (let frame = 0; frame < 3; frame++) {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await nextDocumentUpdate();
       requireActive(spec);
     }
   }
