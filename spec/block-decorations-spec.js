@@ -5,6 +5,11 @@ const SCROLLMAP_PATH = path.join(__dirname, "..");
 const TARGET_ROW = 12;
 
 describe("scrollmap block decoration geometry", () => {
+  // Processing fixtures use a real grammar; None deliberately disables this package.
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("language-text");
+  });
+
   let editor, editorElement, strip, draw, registration, style, markers, previousPaint, activeSpec;
 
   function requireActive(spec) {

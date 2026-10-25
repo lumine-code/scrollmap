@@ -1,4 +1,9 @@
 describe("scrollmap marker registry ownership", () => {
+  // Processing fixtures use a real grammar; None deliberately disables this package.
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("language-text");
+  });
+
   let mainModule, markerPackage, editor, editorElement, providers, registries;
 
   async function flush() {

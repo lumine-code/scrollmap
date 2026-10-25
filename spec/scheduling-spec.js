@@ -1,4 +1,9 @@
 describe("scrollmap frame scheduling", () => {
+  // Processing fixtures use a real grammar; None deliberately disables this package.
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("language-text");
+  });
+
   let main, marker, editor, strip, layer, row, reads, writes;
 
   function drain(queue, { includeCancelled = false } = {}) {
@@ -136,6 +141,11 @@ describe("scrollmap frame scheduling", () => {
 });
 
 describe("scrollmap initial frame scheduling", () => {
+  // Processing fixtures use a real grammar; None deliberately disables this package.
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("language-text");
+  });
+
   it("computes attached layers before the first shared document paint", async () => {
     const workspace = lumine.workspace.getElement();
     workspace.style.width = "800px";

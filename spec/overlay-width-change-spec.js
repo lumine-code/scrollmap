@@ -7,6 +7,11 @@ beforeEach(() => {
 });
 
 describe("Scrollmap overlay-width changes", () => {
+  // Processing fixtures use a real grammar; None deliberately disables this package.
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("language-text");
+  });
+
   let editor, main, marker, style, layer, widgetConsumer, widget, widgetContainer;
   const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
 

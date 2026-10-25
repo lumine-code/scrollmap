@@ -4,6 +4,11 @@ const MARKER_PATH = path.join(__dirname, "..", "..", "marker");
 const SCROLLMAP_PATH = path.join(__dirname, "..");
 
 describe("scrollmap", () => {
+  // Processing fixtures use a real grammar; None deliberately disables this package.
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("language-text");
+  });
+
   let workspaceElement, specStyle, styleSheets, markerMain;
   const readbackCanvases = new WeakMap();
 
