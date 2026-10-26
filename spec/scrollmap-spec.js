@@ -176,6 +176,10 @@ describe("scrollmap", () => {
       editor = await lumine.workspace.open();
       editor.setText(Array(40).fill("scrollmap toggle").join("\n"));
       strip = await waitFor(() => mainModule.scrollmapForEditor(editor));
+      // Parsing and the attachment frame may refresh rows independently of a toggle.
+      await editor.whenGrammarSettled();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      lumine.views.performDocumentUpdate();
     });
 
     const toggle = () => lumine.commands.dispatch(workspaceElement, "scrollmap:toggle");
