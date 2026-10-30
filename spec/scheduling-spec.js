@@ -116,8 +116,8 @@ describe("scrollmap frame scheduling", () => {
         : geometry;
     });
     strip.updateView();
-    // Measuring a long line can reveal a horizontal scrollbar in a later
-    // reader without changing the outer editor's ResizeObserver dimensions.
+    // A later reader can publish a newly measured track height. Paint must
+    // project into that value rather than the earlier geometry snapshot.
     lumine.views.readDocument(() => (trackHeight = 280));
 
     frame();

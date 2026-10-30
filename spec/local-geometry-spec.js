@@ -82,19 +82,27 @@ describe("scrollmap widget local geometry", () => {
     expect(widget.element.parentNode).toBe(next);
   });
 
-  it("projects into the shorter vertical track while a horizontal bar occupies the corner", () => {
+  it("projects across the horizontal gutter at the end of a full-height vertical track", () => {
     const draw = spyOn(widget.canvas, "draw");
-    geometry = { verticalSize: 10, viewportHeight: 200, verticalTrackSize: 190 };
+    geometry = {
+      layout: "gutter",
+      verticalSize: 10,
+      horizontalSize: 10,
+      viewportHeight: 200,
+      canScrollHorizontally: true,
+      verticalTrackSize: 210,
+    };
     changed(geometry);
     widget.setItems([{ prc: 100 }]);
     lumine.views.performDocumentUpdate();
-    expect(draw.calls.mostRecent().args[2]).toBe(190);
-    expect(draw.calls.mostRecent().args[0][0].y).toBe(190);
-    expect(widget.element.style.height).toBe("190px");
-    geometry = { ...geometry, verticalTrackSize: 200 };
+    expect(draw.calls.mostRecent().args[2]).toBe(210);
+    expect(draw.calls.mostRecent().args[0][0].y).toBe(210);
+    expect(widget.element.style.height).toBe("210px");
+    geometry = { ...geometry, viewportHeight: 210, canScrollHorizontally: false };
     changed(geometry);
     lumine.views.performDocumentUpdate();
-    expect(draw.calls.mostRecent().args[2]).toBe(200);
+    expect(draw.calls.mostRecent().args[2]).toBe(210);
+    expect(draw).toHaveBeenCalledTimes(1);
   });
 
   it("releases the observer and cancels a queued paint on destruction", () => {
@@ -107,4 +115,59 @@ describe("scrollmap widget local geometry", () => {
     expect(draw).not.toHaveBeenCalled();
     expect(widget.element.parentNode).toBeNull();
   });
+});
+
+describe("scrollmap widget full-height gutter integration", () => {
+  let fixture, container, controller, widget;
+
+  beforeEach(async () => {
+    await lumine.packages.activatePackage("marker");
+    const main = (await lumine.packages.activatePackage("scrollmap")).mainModule;
+    const Simplemap = main.provideScrollmapWidget();
+    fixture = document.createElement("div");
+    fixture.style.cssText = "position:absolute;left:30px;top:30px;width:300px;height:180px";
+    container = document.createElement("div");
+    container.style.cssText = "width:100%;height:100%;overflow:auto;--scrollbar-size:10px";
+    const content = document.createElement("div");
+    content.style.cssText = "width:900px;height:1000px";
+    container.appendChild(content);
+    fixture.appendChild(container);
+    jasmine.attachToDOM(fixture);
+    controller = lumine.scrollbars.attach(container, { layout: "gutter", policy: "always" });
+    controller.write(controller.read());
+    widget = new Simplemap({ scrollElement: container });
+  });
+
+  afterEach(() => {
+    widget?.destroy();
+    controller?.destroy();
+    fixture?.remove();
+  });
+
+  for (const direction of ["ltr", "rtl"]) {
+    it(`projects into the lower end of a real ${direction} gutter track with both axes visible`, () => {
+      container.style.direction = direction;
+      controller.write(controller.read());
+      const draw = spyOn(widget.canvas, "draw").and.callThrough();
+      widget.setItems([{ prc: 99 }]);
+      lumine.views.performDocumentUpdate();
+      lumine.views.performDocumentUpdate();
+
+      const geometry = lumine.scrollbars.getGeometry(container);
+      const track = lumine.scrollbars.getVerticalTrack(container);
+      const bounds = track.getBoundingClientRect();
+      expect(geometry.layout).toBe("gutter");
+      expect(geometry.canScrollVertically).toBeTrue();
+      expect(geometry.canScrollHorizontally).toBeTrue();
+      expect(geometry.verticalTrackSize).toBe(container.clientHeight + geometry.horizontalSize);
+      expect(bounds.height).toBe(geometry.verticalTrackSize);
+      expect(bounds.bottom).toBe(container.getBoundingClientRect().bottom);
+      expect(widget.element.parentNode).toBe(track);
+      expect(widget.element.getBoundingClientRect().height).toBe(bounds.height);
+      const latest = draw.calls.mostRecent().args;
+      expect(latest[2]).toBe(bounds.height);
+      expect(latest[0][0].y).toBeCloseTo(bounds.height * 0.99);
+      expect(latest[0][0].y).toBeGreaterThan(geometry.viewportHeight);
+    });
+  }
 });
