@@ -90,7 +90,7 @@ module.exports = {
 
 Markers are drawn on a canvas, but their appearance still comes from CSS: the widget resolves `.marker` rules through a hidden style-resolver element — the same canvas machinery the `marker` package supplies to every overview map — so the rules that style editor layers style these too. Without the `marker` package installed the widget degrades to an empty strip.
 
-The widget subscribes to theme and stylesheet changes and repaints itself when the marker styles actually change, so a theme switch needs no work from the consumer. A bound widget observes `lumine.scrollbars` geometry for its own scroll element, coalesces item and geometry updates in the shared document read/paint cycle, and paints below the thumb. Scroll movement alone does not rebuild its markers. Repeated identical item sets skip canvas work. Markers never intercept clicks; the core track owns pointer interaction.
+The widget subscribes to theme and stylesheet changes and repaints itself when the marker styles actually change, so a theme switch needs no work from the consumer. A bound widget observes `lumine.scrollbars` geometry for its own scroll element, coalesces item and geometry updates in the shared document read/paint cycle, and paints above the thumb. Scroll movement alone does not rebuild its markers. Repeated identical item sets skip canvas work. Markers never intercept clicks; the core track owns pointer interaction.
 
 An unbound widget retains the standalone rectangle API: append `element` to your own container, set its dimensions, and call `update()` after a resize without fresh items. Its `setItems()` paints synchronously. Bound widgets mount themselves, so consumers must not move them back into their content container.
 
