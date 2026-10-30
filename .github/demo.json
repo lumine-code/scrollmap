@@ -1,9 +1,9 @@
 {
   "title": "scrollmap",
   "description": "Locate document sections on the scrollbar while navigating a long file.",
-  "recordedOn": "2026-10-14",
-  "sourceRevision": "325704928a49532d6ecfec6769c7eee8dabc7552",
-  "themeSourceRevision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+  "recordedOn": "2026-10-30",
+  "sourceRevision": "d39b83c72dbd4116a4cf861b9ab4c86dc6cf9e76",
+  "themeSourceRevision": "484213c82bbf567e2cb7cd5f85c5d73965346809",
   "mode": "normal",
   "fontSettings": "default",
   "scenario": "demo.js",
@@ -11,8 +11,8 @@
   "environment": {
     "platform": "win32",
     "arch": "x64",
-    "electron": "44.7.0",
-    "chrome": "152.0.7977.130",
+    "electron": "45.0.0",
+    "chrome": "156.0.8078.48",
     "devicePixelRatio": 1,
     "locale": "en-GB",
     "fontFamily": "Fira Code, Menlo, DejaVu Sans Mono, Consolas, monospace",
@@ -21,39 +21,40 @@
   },
   "viewport": { "width": 1100, "height": 730 },
   "cornerRadius": 10,
+  "privacy": { "version": 1, "location": "neutral", "textChecked": true },
   "sources": {
     "editor": {
-      "revision": "d0b1751fffac65f10a405545e5f01cf7ad05c0bb",
+      "revision": "da1fe78142f396c784aa18569cfd04ba7719fb09",
       "dirty": true,
-      "workingTreeHash": "9e1925be2839d18f5d0ab44707b99041e25a1ae20ebbfbfd58e9a92724c61a7a"
+      "workingTreeHash": "7739e7077b43ac8e2b3581b9960d1310fd4edee7745e9edf5f347ee8b04dc38a"
     },
     "package": {
-      "revision": "325704928a49532d6ecfec6769c7eee8dabc7552",
+      "revision": "d39b83c72dbd4116a4cf861b9ab4c86dc6cf9e76",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "scrollmap": {
-      "revision": "325704928a49532d6ecfec6769c7eee8dabc7552",
+      "revision": "d39b83c72dbd4116a4cf861b9ab4c86dc6cf9e76",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "language-gfm": {
-      "revision": "be723ccf806fdd4a2a06638f6e881c09a53b4409",
+      "revision": "e2eca2b15d854161c670e5b8815ad48e636957b7",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "marker": {
-      "revision": "bb4fc8fec8c9d09fe59db9b0d70352ff33cde8f8",
+      "revision": "7f788e69e72ce8c3eefd8b3ef251e43c18a61018",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "navigation-panel": {
-      "revision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
-      "dirty": false,
-      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "revision": "075cf9ca1e201e81325bdc9bb5fa4b45d5d7b3c6",
+      "dirty": true,
+      "workingTreeHash": "294da1ef580e99133465abe26d7d37020da60ba37e56f0cb5a67b13d1fb29aec"
     },
     "one-theme": {
-      "revision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+      "revision": "484213c82bbf567e2cb7cd5f85c5d73965346809",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     }
@@ -70,7 +71,7 @@
       "label": "Locate document sections on the scrollbar while navigating a long file.",
       "width": 1100,
       "height": 730,
-      "sha256": "5644c276551de4b02feb877e039d646067b3d40da37ca232d94d87c35b70e9b2"
+      "sha256": "9b7d518b11bf22d94cf77c8ca347bbaca1228b73bf6081eff6c639a2589392e8"
     }
   ]
 }
