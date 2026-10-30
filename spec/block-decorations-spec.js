@@ -110,7 +110,6 @@ describe("scrollmap block decoration geometry", () => {
     jasmine.attachToDOM(workspaceElement);
     lumine.config.set("editor.scrollPastEnd", false);
     lumine.config.set("marker.cursors.enabled", false);
-    lumine.config.set("scrollmap.overlayWidth", 8);
     style = document.createElement("style");
     style.textContent = ".marker.marker-block-spec { background-color: rgb(0, 128, 255); }";
     document.head.appendChild(style);

@@ -221,11 +221,9 @@ describe("scrollmap marker registry ownership", () => {
     const provider = await provide(service);
     const strip = mainModule.scrollmapForEditor(editor);
     spyOn(strip, "update").and.callThrough();
-    spyOn(mainModule, "measureScrollbar").and.callThrough();
     provider.dispose();
     for (const callback of callbacks.slice()) callback(0);
-    expect(window.cancelAnimationFrame.calls.count()).toBeGreaterThanOrEqual(2);
+    expect(window.cancelAnimationFrame.calls.count()).toBeGreaterThanOrEqual(1);
     expect(strip.update).not.toHaveBeenCalled();
-    expect(mainModule.measureScrollbar).not.toHaveBeenCalled();
   });
 });

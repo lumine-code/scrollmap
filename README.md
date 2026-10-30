@@ -2,14 +2,14 @@
 
 Show markers on the scrollbar.
 
-A strip beside every editor scrollbar drawing the layers the `marker` package computes — git changes, linter messages, search hits and more — plus the same widget for custom panes.
+A strip inside every editor scrollbar drawing the layers the `marker` package computes — git changes, linter messages, search hits and more — plus the same widget for custom panes.
 
 ## Features
 
-- **Layer system**: marker layers enabled in the `marker` hub are drawn beside the scrollbar, computed once and shared with the minimap.
+- **Layer system**: marker layers enabled in the `marker` hub are drawn underneath the scrollbar thumb, computed once and shared with the minimap.
 - **Visibility**: show or hide editor scrollbar markers while preserving the shared layers and their state.
 - **Column layout**: markers positioned in the left, center, or right column, or spanning the full width.
-- **Cross-platform**: automatically adapts to scrollbar width on Windows, macOS, and Linux, and floats at its own width where scrollbars overlay the content.
+- **Cross-platform**: shares the editor's overlay scrollbar geometry on Windows, macOS, and Linux.
 - **Simplemap API**: support for non-editor panes like the PDF view.
 
 ![Locate document sections on the scrollbar while navigating a long file.](.github/demo.png)
@@ -26,12 +26,7 @@ Commands available in `lumine-workspace`:
 
 ## Customization
 
-The scrollbar width is measured automatically and stored as CSS variables on `:root`:
-
-| Variable             | Description                                                         |
-| -------------------- | ------------------------------------------------------------------- |
-| `--scrollbar-width`  | Measured scrollbar width (e.g. 10px on Windows, 8px on Linux)       |
-| `--scrollbar-bottom` | Bottom offset for horizontal scrollbar (0px for overlay scrollbars) |
+The core scrollbar owns the track width and viewport geometry. Every marker strip uses its own scroller, so resizing or selecting another pane never changes an unrelated strip.
 
 Markers are drawn on a canvas for performance. Existing marker CSS classes are still used through hidden style resolver elements, so packages and user styles can keep setting marker color, opacity, width, height, and z-index with `.marker` rules.
 

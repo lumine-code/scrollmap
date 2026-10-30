@@ -120,6 +120,29 @@ describe("scrollmap frame scheduling", () => {
     expect(draw.calls.mostRecent().args[2]).toBe(280);
   });
 
+  it("reuses unchanged layer projections and invalidates them when row geometry moves", () => {
+    const fixedProvider = marker.consumeMarkerLayer({
+      name: "fixed-projection",
+      getItems: () => [{ row: 60 }],
+    });
+    strip.handle.updateSync();
+    frame();
+    const fixed = strip.handle.layerFor("fixed-projection");
+    const project = spyOn(strip, "regionsFor").and.callThrough();
+    row = 25;
+    layer.update();
+    frame();
+    expect(project.calls.allArgs().map(([current]) => current)).toEqual([layer]);
+    project.calls.reset();
+    const version = editor.component.getRowGeometryVersion();
+    spyOn(editor.component, "getRowGeometryVersion").and.returnValue(version + 1);
+    strip.updateView();
+    frame();
+    expect(project.calls.allArgs().map(([current]) => current)).toContain(fixed);
+    expect(project.calls.allArgs().map(([current]) => current)).toContain(layer);
+    fixedProvider.dispose();
+  });
+
   it("cancels the paint when hidden between document reads and writes", () => {
     const draw = spyOn(strip.canvas, "draw").and.callThrough();
     strip.updateView();

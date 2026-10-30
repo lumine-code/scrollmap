@@ -155,16 +155,9 @@ describe("scrollmap", () => {
       expect(mainModule.registry).toBeNull();
     });
 
-    it("initializes the scrollbar CSS variables in a root rule", async () => {
-      const mainModule = await activate();
-      const root = document.documentElement;
-      const rule = mainModule.scrollbarGeometryRule;
-
-      expect(rule.selectorText).toBe(":root");
-      expect(rule.style.getPropertyValue("--scrollbar-width")).not.toBe("");
-      expect(rule.style.getPropertyValue("--scrollbar-bottom")).not.toBe("");
-      expect(root.style.getPropertyValue("--scrollbar-width")).toBe("");
-      expect(root.style.getPropertyValue("--scrollbar-bottom")).toBe("");
+    it("leaves shared scrollbar geometry to the core", async () => {
+      await activate();
+      expect(document.querySelector('style[data-scrollmap="scrollbar-geometry"]')).toBeNull();
     });
   });
 
@@ -421,10 +414,6 @@ describe("scrollmap", () => {
       const scrollbar = shortElement.querySelector(".vertical-scrollbar");
       expect(scrollbar.offsetWidth - scrollbar.clientWidth).toBe(0);
 
-      // And the strip may not fall back on a width some other editor happened
-      // to publish: this editor's own component is the only source.
-      mainModule.publishScrollbarGeometry(0, 0);
-
       markerMain.consumeMarkerLayer({
         name: "speclayer",
         getItems: () => [{ row: 0 }],
@@ -436,14 +425,12 @@ describe("scrollmap", () => {
       expect(shortMap.element.offsetWidth).toBeGreaterThan(0);
     });
 
-    // Where scrollbars float over the content -- macOS, and Linux with overlay
-    // scrollbars -- the component's measurement is 0 and correct. The strip has
-    // to float too rather than collapse to nothing.
-    it("falls back to the overlay width when the scrollbar reserves no space", async () => {
-      lumine.config.set("scrollmap.overlayWidth", 9);
-      spyOn(editorElement.component, "getVerticalScrollbarWidth").and.returnValue(0);
-      spyOn(editorElement.component, "getHorizontalScrollbarHeight").and.returnValue(0);
-      mainModule.measureScrollbar(editor);
+    it("uses the core's local track geometry", async () => {
+      const geometry = lumine.scrollbars.getGeometry(editorElement);
+      const getGeometry = lumine.scrollbars.getGeometry.bind(lumine.scrollbars);
+      spyOn(lumine.scrollbars, "getGeometry").and.callFake((element) => {
+        return element === editorElement ? { ...geometry, verticalSize: 9 } : getGeometry(element);
+      });
 
       markerMain.consumeMarkerLayer({
         name: "speclayer",
@@ -454,25 +441,13 @@ describe("scrollmap", () => {
       const canvas = scrollmap.element.querySelector("canvas.scrollmap-canvas");
       await waitFor(() => canvasHasInk(canvas));
       expect(scrollmap.element.style.width).toBe("9px");
-      const style = mainModule.scrollbarGeometryRule.style;
-      expect(style.getPropertyValue("--scrollbar-width")).toBe("9px");
-      expect(style.getPropertyValue("--scrollbar-bottom")).toBe("0px");
     });
 
-    it("measures the vertical width and horizontal height independently", () => {
-      spyOn(editorElement.component, "getVerticalScrollbarWidth").and.returnValue(11);
-      spyOn(editorElement.component, "getHorizontalScrollbarHeight").and.returnValue(7);
-
-      mainModule.measureScrollbar(editor);
-
-      const style = mainModule.scrollbarGeometryRule.style;
-      expect(style.getPropertyValue("--scrollbar-width")).toBe("11px");
-      expect(style.getPropertyValue("--scrollbar-bottom")).toBe("7px");
-    });
-
-    it("attaches a scrollmap element next to the editor scrollbar", () => {
+    it("attaches a noninteractive canvas inside the shared track", () => {
       expect(scrollmap.element.classList.contains("scrollmap")).toBe(true);
       expect(editorElement.contains(scrollmap.element)).toBe(true);
+      expect(scrollmap.element.parentNode).toBe(lumine.scrollbars.getVerticalTrack(editorElement));
+      expect(getComputedStyle(scrollmap.element).pointerEvents).toBe("none");
       expect(scrollmap.element.querySelector("canvas.scrollmap-canvas")).not.toBeNull();
     });
 

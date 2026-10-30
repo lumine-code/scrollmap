@@ -4,9 +4,9 @@
   top: 0;
   left: auto !important;
   right: 0;
-  bottom: var(--scrollbar-bottom);
-  width: var(--scrollbar-width);
-  z-index: 9;
+  bottom: 0;
+  width: 100%;
+  z-index: 0;
   pointer-events: none;
 
   .scrollmap-canvas {
