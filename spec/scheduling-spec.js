@@ -107,12 +107,18 @@ describe("scrollmap frame scheduling", () => {
 
   it("waits for late editor measurements before projecting scrollbar geometry", () => {
     const draw = spyOn(strip.canvas, "draw").and.callThrough();
-    let clientHeight = 300;
-    spyOn(editor.component, "getScrollContainerClientHeight").and.callFake(() => clientHeight);
+    let trackHeight = 300;
+    const getGeometry = lumine.scrollbars.getGeometry.bind(lumine.scrollbars);
+    spyOn(lumine.scrollbars, "getGeometry").and.callFake((element) => {
+      const geometry = getGeometry(element);
+      return element === editor.getElement()
+        ? { ...geometry, verticalTrackSize: trackHeight }
+        : geometry;
+    });
     strip.updateView();
     // Measuring a long line can reveal a horizontal scrollbar in a later
     // reader without changing the outer editor's ResizeObserver dimensions.
-    lumine.views.readDocument(() => (clientHeight = 280));
+    lumine.views.readDocument(() => (trackHeight = 280));
 
     frame();
 

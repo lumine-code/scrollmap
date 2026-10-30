@@ -82,6 +82,21 @@ describe("scrollmap widget local geometry", () => {
     expect(widget.element.parentNode).toBe(next);
   });
 
+  it("projects into the shorter vertical track while a horizontal bar occupies the corner", () => {
+    const draw = spyOn(widget.canvas, "draw");
+    geometry = { verticalSize: 10, viewportHeight: 200, verticalTrackSize: 190 };
+    changed(geometry);
+    widget.setItems([{ prc: 100 }]);
+    lumine.views.performDocumentUpdate();
+    expect(draw.calls.mostRecent().args[2]).toBe(190);
+    expect(draw.calls.mostRecent().args[0][0].y).toBe(190);
+    expect(widget.element.style.height).toBe("190px");
+    geometry = { ...geometry, verticalTrackSize: 200 };
+    changed(geometry);
+    lumine.views.performDocumentUpdate();
+    expect(draw.calls.mostRecent().args[2]).toBe(200);
+  });
+
   it("releases the observer and cancels a queued paint on destruction", () => {
     const draw = spyOn(widget.canvas, "draw");
     widget.setItems([{ prc: 10 }]);
